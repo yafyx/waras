@@ -32,7 +32,9 @@ export default function Chat() {
       setToolCall(toolCall.toolName);
     },
     onError: (error: Error) => {
-      toast.error("You've been rate limited, please try again later!");
+      toast.error(
+        "Batas permintaan tercapai! Silakan coba lagi dalam beberapa saat ya."
+      );
     },
   });
 
@@ -86,22 +88,22 @@ export default function Chat() {
         <motion.div
           animate={{
             minHeight: isExpanded ? 400 : 0,
-            padding: isExpanded ? 12 : 0,
+            padding: isExpanded ? 16 : 0,
           }}
           transition={{
             type: "spring",
             bounce: 0.3,
           }}
           className={cn(
-            "rounded-lg w-full overflow-hidden",
+            "rounded-2xl w-full overflow-hidden shadow-lg transition-shadow duration-300",
             isExpanded ? "bg-neutral-200 dark:bg-neutral-800" : "bg-transparent"
           )}
         >
-          <div className="flex flex-col w-full justify-between gap-2 h-full">
-            <div className="flex-grow overflow-y-auto max-h-[350px] scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 px-2">
+          <div className="flex flex-col w-full justify-between gap-4 h-full">
+            <div className="flex-grow overflow-y-auto max-h-[350px] scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 px-2 py-2">
               <AnimatePresence>
                 {allMessages.length > 0 ? (
-                  <div className="flex flex-col gap-4 py-2">
+                  <div className="flex flex-col gap-6 py-2">
                     {allMessages.map((message, index) => (
                       <MessageItem
                         key={message.id}
@@ -118,23 +120,27 @@ export default function Chat() {
               </AnimatePresence>
             </div>
 
-            <form onSubmit={onFormSubmit} className="flex space-x-2 mt-2">
+            <form
+              onSubmit={onFormSubmit}
+              className="flex space-x-2 mt-2 sticky bottom-0 z-10 bg-neutral-200 dark:bg-neutral-800 rounded-xl p-2 shadow-md"
+            >
               <Input
-                className="bg-neutral-100 text-base w-full text-neutral-700 dark:bg-neutral-700 dark:placeholder:text-neutral-400 dark:text-neutral-300"
+                className="bg-neutral-100 text-base w-full text-neutral-700 dark:bg-neutral-700 dark:placeholder:text-neutral-400 dark:text-neutral-300 rounded-lg px-4 py-3 border border-neutral-300 dark:border-neutral-600 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 shadow-sm"
                 minLength={3}
                 required
                 value={input}
-                placeholder="Ask me anything..."
+                placeholder="Tanyakan apa saja kepada saya..."
                 onChange={handleInputChange}
                 ref={inputRef}
                 disabled={awaitingResponse}
+                autoComplete="off"
               />
               <Button
                 type="submit"
                 variant="ghost"
                 size="icon"
                 disabled={input.trim().length < 3 || awaitingResponse}
-                className="bg-neutral-300 dark:bg-neutral-600 hover:bg-neutral-400 dark:hover:bg-neutral-500 text-neutral-700 dark:text-neutral-200"
+                className="bg-neutral-300 dark:bg-neutral-600 hover:bg-neutral-400 dark:hover:bg-neutral-500 text-neutral-700 dark:text-neutral-200 rounded-lg shadow transition-all duration-200 focus:ring-2 focus:ring-blue-400 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <SendIcon />
               </Button>
@@ -157,11 +163,12 @@ const MessageItem = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
       className={cn(
-        "px-3 py-2 rounded-lg max-w-[90%]",
+        "px-4 py-3 rounded-2xl max-w-[90%] shadow-md transition-all duration-200",
         isUser
           ? "bg-blue-500 text-white self-end"
           : "bg-neutral-300 dark:bg-neutral-700 self-start"
@@ -196,13 +203,33 @@ const AssistantMessage = ({ message }: { message: Message | undefined }) => {
         <MemoizedReactMarkdown>{mainContent}</MemoizedReactMarkdown>
 
         {hasSources && (
-          <div className="mt-4 pt-2 border-t border-neutral-300 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 text-xs">
-            <div className="flex items-baseline gap-1">
-              <span>Sumber:</span>
-              <div id="markdown" className="inline">
-                <MemoizedReactMarkdown>{sourcesContent}</MemoizedReactMarkdown>
+          <div className="mt-4 pt-3 border-t border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 text-xs">
+            <details className="group">
+              <summary className="flex items-center gap-1 cursor-pointer hover:text-neutral-800 dark:hover:text-neutral-200 font-medium transition-colors duration-200">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="group-open:rotate-90 transition-transform duration-200"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span>Referensi & Sumber Informasi</span>
+              </summary>
+              <div className="pl-6 mt-2 border-l-2 border-neutral-300 dark:border-neutral-600">
+                <div id="markdown" className="inline">
+                  <MemoizedReactMarkdown>
+                    {sourcesContent}
+                  </MemoizedReactMarkdown>
+                </div>
               </div>
-            </div>
+            </details>
           </div>
         )}
       </div>
@@ -213,10 +240,10 @@ const AssistantMessage = ({ message }: { message: Message | undefined }) => {
 const Loading = ({ tool }: { tool?: string }) => {
   const toolName =
     tool === "getInformation"
-      ? "Getting information"
+      ? "Sedang mencari informasi"
       : tool === "addResource"
-      ? "Adding information"
-      : "Thinking";
+      ? "Sedang menambahkan informasi"
+      : "Sedang berpikir";
 
   return (
     <motion.div
@@ -224,14 +251,14 @@ const Loading = ({ tool }: { tool?: string }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ type: "spring" }}
-      className="overflow-hidden flex justify-start items-center px-3 py-2 rounded-lg bg-neutral-300 dark:bg-neutral-700 self-start max-w-[90%]"
+      className="overflow-hidden flex justify-start items-center px-4 py-3 rounded-2xl bg-neutral-300 dark:bg-neutral-700 self-start max-w-[90%] shadow-md"
     >
       <div className="flex flex-row gap-2 items-center">
         <div className="animate-spin dark:text-neutral-400 text-neutral-500">
           <LoadingIcon />
         </div>
-        <div className="text-neutral-500 dark:text-neutral-400 text-sm">
-          {toolName}...
+        <div className="text-neutral-500 dark:text-neutral-400 text-sm flex items-center gap-1">
+          {toolName} <span className="animate-bounce">...</span>
         </div>
       </div>
     </motion.div>
