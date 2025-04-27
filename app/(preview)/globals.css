@@ -43,7 +43,6 @@
 }
 
 :root {
-
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
 
@@ -165,6 +164,86 @@
 
 #markdown a {
   @apply text-blue-500 hover:underline;
+}
+
+/* Add enhanced markdown styling */
+.prose {
+  @apply text-neutral-800 dark:text-neutral-200;
+}
+
+.prose pre {
+  @apply bg-[#1e1e1e] rounded-md p-3 mb-4 overflow-auto;
+}
+
+.prose code {
+  @apply bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded-md text-sm font-mono;
+}
+
+.prose pre code {
+  @apply bg-transparent dark:bg-transparent p-0 rounded-none text-sm font-mono;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply font-bold;
+}
+
+.prose h1 {
+  @apply text-2xl mt-6 mb-4;
+}
+
+.prose h2 {
+  @apply text-xl mt-5 mb-3;
+}
+
+.prose h3 {
+  @apply text-lg mt-4 mb-2;
+}
+
+.prose h4 {
+  @apply text-base mt-3 mb-1;
+}
+
+.prose p {
+  @apply mb-4;
+}
+
+.prose ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.prose ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.prose li {
+  @apply mb-1;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-neutral-300 dark:border-neutral-600 pl-4 py-1 mb-4 italic;
+}
+
+.prose table {
+  @apply min-w-full border-collapse text-sm mb-4;
+}
+
+.prose tr {
+  @apply border-b border-neutral-300 dark:border-neutral-700;
+}
+
+.prose th {
+  @apply py-2 px-3 text-left font-bold bg-neutral-100 dark:bg-neutral-800;
+}
+
+.prose td {
+  @apply py-2 px-3;
+}
+
+.prose hr {
+  @apply my-4 border-neutral-300 dark:border-neutral-700;
 }
 
 @layer base {

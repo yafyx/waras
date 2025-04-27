@@ -12,6 +12,12 @@ import ProjectOverview from "@/components/project-overview";
 import { LoadingIcon, SendIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import rehypeHighlight from "rehype-highlight";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import rehypeExternalLinks from "rehype-external-links";
+import rehypeClassNames from "rehype-class-names";
+import "highlight.js/styles/github-dark.css";
 
 export default function Chat() {
   const [toolCall, setToolCall] = useState<string>();
@@ -196,39 +202,63 @@ const AssistantMessage = ({ message }: { message: Message | undefined }) => {
 
   return (
     <div
-      className="whitespace-pre-wrap font-mono anti text-sm text-neutral-800 dark:text-neutral-200 overflow-hidden"
+      className="text-sm text-neutral-800 dark:text-neutral-200 overflow-hidden"
       id="markdown"
     >
-      <div className="overflow-hidden">
-        <MemoizedReactMarkdown>{mainContent}</MemoizedReactMarkdown>
-
-        {hasSources && (
-          <div className="mt-4 pt-3 border-t border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 text-xs">
-            <details className="group">
-              <summary className="flex items-center gap-1 cursor-pointer hover:text-neutral-800 dark:hover:text-neutral-200 font-medium transition-colors duration-200">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="group-open:rotate-90 transition-transform duration-200"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                <span>Referensi & Sumber Informasi</span>
-              </summary>
-              <div className="pl-6 mt-2 border-l-2 border-neutral-300 dark:border-neutral-600 prose prose-sm dark:prose-invert prose-a:text-blue-600 dark:prose-a:text-blue-400 hover:prose-a:underline">
-                <MemoizedReactMarkdown>{sourcesContent}</MemoizedReactMarkdown>
-              </div>
-            </details>
-          </div>
-        )}
+      <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-p:my-2 prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline prose-pre:bg-[#1e1e1e] prose-pre:p-3 prose-code:bg-neutral-200 dark:prose-code:bg-neutral-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:rounded overflow-hidden">
+        <ReactMarkdown
+          rehypePlugins={[
+            rehypeSlug,
+            [rehypeAutolinkHeadings, { behavior: "wrap" }],
+            [rehypeHighlight, { ignoreMissing: true }],
+            [
+              rehypeExternalLinks,
+              { target: "_blank", rel: ["nofollow", "noopener", "noreferrer"] },
+            ],
+          ]}
+        >
+          {mainContent}
+        </ReactMarkdown>
       </div>
+
+      {hasSources && (
+        <div className="mt-4 pt-3 border-t border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 text-xs">
+          <details className="group">
+            <summary className="flex items-center gap-1 cursor-pointer hover:text-neutral-800 dark:hover:text-neutral-200 font-medium transition-colors duration-200">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="group-open:rotate-90 transition-transform duration-200"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+              <span>Referensi & Sumber Informasi</span>
+            </summary>
+            <div className="pl-6 mt-2 border-l-2 border-neutral-300 dark:border-neutral-600 prose prose-sm dark:prose-invert prose-a:text-blue-600 dark:prose-a:text-blue-400 hover:prose-a:underline">
+              <ReactMarkdown
+                rehypePlugins={[
+                  [
+                    rehypeExternalLinks,
+                    {
+                      target: "_blank",
+                      rel: ["nofollow", "noopener", "noreferrer"],
+                    },
+                  ],
+                ]}
+              >
+                {sourcesContent}
+              </ReactMarkdown>
+            </div>
+          </details>
+        </div>
+      )}
     </div>
   );
 };
@@ -260,8 +290,3 @@ const Loading = ({ tool }: { tool?: string }) => {
     </motion.div>
   );
 };
-
-const MemoizedReactMarkdown: React.FC<Options> = React.memo(
-  ReactMarkdown,
-  (prevProps, nextProps) => prevProps.children === nextProps.children
-);

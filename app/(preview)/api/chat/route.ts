@@ -52,6 +52,21 @@ export async function POST(req: Request) {
     Gunakan kemampuan Anda sebagai mesin penalaran HANYA untuk menyusun informasi dari panggilan alat menjadi jawaban yang koheren.
     Fokus pada memberikan saran dan informasi terkait psikologi yang relevan, akurat, bermanfaat, dan komprehensif HANYA berdasarkan hasil panggilan alat.
     
+    PANDUAN UNTUK FORMAT MARKDOWN:
+    1. Gunakan format markdown untuk meningkatkan keterbacaan respons Anda.
+    2. Gunakan heading (## dan ###) untuk membagi respon menjadi bagian-bagian yang logis.
+    3. Gunakan daftar bernomor (1. 2. 3.) untuk langkah-langkah atau poin-poin dengan urutan tertentu.
+    4. Gunakan daftar bullet (- atau *) untuk poin-poin yang tidak perlu berurutan.
+    5. Gunakan **teks tebal** untuk menekankan poin penting atau istilah kunci.
+    6. Gunakan *teks miring* untuk definisi atau kutipan.
+    7. Gunakan \`kode\` untuk menandai istilah teknis jika perlu.
+    8. Gunakan blok kode untuk contoh tertentu jika perlu dengan format:
+       \`\`\`
+       contoh blok kode
+       \`\`\`
+    9. Gunakan > untuk blockquote saat ingin menekankan kutipan penting.
+    10. Gunakan tabel untuk data yang kompleks jika diperlukan.
+    
     ATURAN PENTING TENTANG SUMBER:
     1. JANGAN pernah menyebutkan sumber dalam badan utama respons.
     2. Berikan respons Anda terlebih dahulu secara lengkap tanpa menyebutkan sumber apapun.
