@@ -3,8 +3,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToCoreMessages, generateObject, streamText, tool } from "ai";
 import { z } from "zod";
 
-// Allow streaming responses up to 120 seconds (increased from 30)
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_API_KEY!,
