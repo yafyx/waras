@@ -129,7 +129,7 @@ export default function Chat() {
                 minLength={3}
                 required
                 value={input}
-                placeholder="Tanyakan apa saja kepada saya..."
+                placeholder="Tanyakan masalah psikologi mu..."
                 onChange={handleInputChange}
                 ref={inputRef}
                 disabled={awaitingResponse}
@@ -222,12 +222,8 @@ const AssistantMessage = ({ message }: { message: Message | undefined }) => {
                 </svg>
                 <span>Referensi & Sumber Informasi</span>
               </summary>
-              <div className="pl-6 mt-2 border-l-2 border-neutral-300 dark:border-neutral-600">
-                <div id="markdown" className="inline">
-                  <MemoizedReactMarkdown>
-                    {sourcesContent}
-                  </MemoizedReactMarkdown>
-                </div>
+              <div className="pl-6 mt-2 border-l-2 border-neutral-300 dark:border-neutral-600 prose prose-sm dark:prose-invert prose-a:text-blue-600 dark:prose-a:text-blue-400 hover:prose-a:underline">
+                <MemoizedReactMarkdown>{sourcesContent}</MemoizedReactMarkdown>
               </div>
             </details>
           </div>
