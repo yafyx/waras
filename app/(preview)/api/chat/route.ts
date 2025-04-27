@@ -3,8 +3,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToCoreMessages, generateObject, streamText, tool } from "ai";
 import { z } from "zod";
 
-// Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+// Allow streaming responses up to 120 seconds (increased from 30)
+export const maxDuration = 120;
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_API_KEY!,
@@ -33,18 +33,25 @@ export async function POST(req: Request) {
   const result = streamText({
     model: google("gemini-2.0-flash"),
     messages: convertToCoreMessages(messages),
-    system: `Anda adalah kakak psikologi yang membantu.
-    Gunakan alat pada setiap permintaan.
+    maxTokens: 4096,
+    system: `Anda adalah asisten psikologi yang sangat informatif dan membantu.
+    Berikan jawaban yang komprehensif, detail, dan mendalam untuk setiap pertanyaan.
+    Gunakan alat pada setiap permintaan untuk mendapatkan informasi yang relevan.
     Pastikan untuk mendapatkan informasi dari basis pengetahuan sebelum menjawab pertanyaan.
     Jika respons memerlukan beberapa alat, panggil satu alat setelah yang lain tanpa merespons pengguna.
-    HANYA jawab pertanyaan menggunakan informasi dari panggilan alat.
+    
+    PENTING: HANYA jawab pertanyaan menggunakan informasi dari panggilan alat.
     Jika tidak ada informasi yang relevan ditemukan dalam panggilan alat, jawab, "Maaf, saya tidak tahu."
-    Pastikan untuk mematuhi petunjuk dalam panggilan alat, mis. jika mereka meminta untuk merespons seperti "...", lakukan persis seperti itu.
-    Jika informasi yang relevan tidak cocok langsung dengan prompt pengguna, Anda dapat kreatif dalam menyimpulkan jawaban.
-    Buat respons singkat dan padat. Jawab dalam satu kalimat jika memungkinkan.
-    Jika Anda tidak yakin, gunakan alat getInformation dan Anda dapat menggunakan akal sehat untuk bernalar berdasarkan informasi yang Anda miliki.
-    Gunakan kemampuan Anda sebagai mesin penalaran untuk menjawab pertanyaan berdasarkan informasi yang Anda miliki.
-    Fokus pada memberikan saran dan informasi terkait psikologi yang relevan.
+    
+    Jawab pertanyaan menggunakan HANYA:
+    1. Informasi dari panggilan alat
+    
+    Bahkan ketika memberikan jawaban yang komprehensif dan detail, SELALU pastikan jawaban tersebut berdasarkan informasi yang diperoleh dari panggilan alat.
+    
+    Buat jawaban Anda selalu bermanfaat dan informatif berdasarkan informasi dari alat. Jika topik membutuhkan penjelasan detail, berikan sebanyak mungkin informasi yang berguna dari hasil panggilan alat.
+    
+    Gunakan kemampuan Anda sebagai mesin penalaran HANYA untuk menyusun informasi dari panggilan alat menjadi jawaban yang koheren.
+    Fokus pada memberikan saran dan informasi terkait psikologi yang relevan, akurat, bermanfaat, dan komprehensif HANYA berdasarkan hasil panggilan alat.
     
     ATURAN PENTING TENTANG SUMBER:
     1. JANGAN pernah menyebutkan sumber dalam badan utama respons.
@@ -66,6 +73,7 @@ export async function POST(req: Request) {
           similarQuestions: z.array(z.string()).describe("keywords to search"),
         }),
         execute: async ({ similarQuestions }) => {
+          // Increase number of results by expanding search
           const results = await Promise.all(
             similarQuestions.map(
               async (question) => await findRelevantContent(question),
@@ -106,15 +114,15 @@ export async function POST(req: Request) {
           const { object } = await generateObject({
             model: google("gemini-2.0-flash"),
             system:
-              "You are a query understanding assistant for psychology topics. Analyze the user query and generate similar questions.",
+              "You are a comprehensive query understanding assistant for psychology topics. Thoroughly analyze the user query and generate detailed similar questions to explore all aspects of their inquiry.",
             schema: z.object({
               questions: z
                 .array(z.string())
-                .max(3)
-                .describe("similar questions to the user's query. be concise."),
+                .max(5) // Increased from 3 to 5 for more comprehensive search
+                .describe("similar questions to the user's query that cover different aspects of their question"),
             }),
             prompt: `Analyze this query about psychology: "${query}". Provide the following:
-                    3 similar questions that could help answer the user's query. Remember that we will display citations only at the end of the response, never in the main text.`,
+                    5 similar questions that could help comprehensively answer the user's query. Ensure the questions explore different aspects and angles of the topic to provide a thorough answer. Remember that we will display citations only at the end of the response, never in the main text.`,
           });
           return object.questions;
         },
