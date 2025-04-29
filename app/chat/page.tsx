@@ -3,7 +3,7 @@
 import { Message } from "ai";
 import { useChat } from "ai/react";
 import { motion } from "framer-motion";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ChatHeader, ChatBody, InputArea } from "@/components/chat";
@@ -17,7 +17,7 @@ const variants = {
 
 interface ChatPageProps {}
 
-export default function ChatPage({}: ChatPageProps) {
+function ChatPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -211,5 +211,13 @@ export default function ChatPage({}: ChatPageProps) {
         </section>
       </div>
     </motion.div>
+  );
+}
+
+export default function ChatPage({}: ChatPageProps) {
+  return (
+    <Suspense fallback={<div>Loading chat...</div>}>
+      <ChatPageContent />
+    </Suspense>
   );
 }

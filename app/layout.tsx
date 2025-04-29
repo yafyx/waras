@@ -11,7 +11,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ai-sdk-preview-rag.vercel.app"),
+  metadataBase: new URL("https://waras.vercel.app"),
   title: "Waras AI",
   description:
     "Augment language model generations with vector based retrieval using the Vercel AI SDK",
