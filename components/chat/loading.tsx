@@ -1,0 +1,44 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { LoadingIcon } from "@/components/icons";
+
+interface LoadingProps {
+  tool?: string;
+}
+
+export function Loading({ tool }: LoadingProps) {
+  const toolName =
+    tool === "getInformation"
+      ? "Sedang mencari informasi"
+      : tool === "understandQuery"
+      ? "Sedang menganalisis pertanyaan"
+      : "Sedang berpikir";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="flex flex-col gap-2 py-4"
+    >
+      <p className="flex items-center gap-2 font-medium">
+        <img
+          className="size-6 rounded-full"
+          src="/logo.svg"
+          alt="Waras AI Logo"
+        />
+        <span className="text-base opacity-50">Waras AI</span>
+      </p>
+      <div className="flex items-center gap-2 text-neutral-300">
+        <div className="animate-spin dark:text-neutral-400 text-neutral-500">
+          <LoadingIcon />
+        </div>
+        <span className="text-base flex items-center gap-1">
+          {toolName} <span className="animate-bounce">...</span>
+        </span>
+      </div>
+    </motion.div>
+  );
+}

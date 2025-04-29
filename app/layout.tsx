@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
-import { Providers } from "../providers";
+import { Instrument_Serif } from "next/font/google";
+import { Providers } from "./providers";
 
 import "./globals.css";
 
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://ai-sdk-preview-rag.vercel.app"),
-  title: "Retrieval Augmented Generation Preview",
+  title: "Waras AI",
   description:
     "Augment language model generations with vector based retrieval using the Vercel AI SDK",
+  keywords: "AI, SDK, Retrieval, Generation",
 };
 
 export default function RootLayout({
@@ -16,7 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
+    <html
+      lang="en"
+      className={`${instrumentSerif.variable} dark`}
+      style={{ colorScheme: "dark" }}
+    >
       <body>
         <Providers>{children}</Providers>
       </body>

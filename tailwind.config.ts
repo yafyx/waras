@@ -20,6 +20,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
+        serif: ["var(--font-playfair)", ...fontFamily.serif],
       },
       keyframes: {
         "accordion-down": {

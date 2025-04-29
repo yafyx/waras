@@ -162,6 +162,11 @@
   font-family: "uncut sans", sans-serif;
 }
 
+/* Allow Tailwind font classes to override the default font */
+.font-serif {
+  font-family: var(--font-serif), serif !important;
+}
+
 #markdown a {
   @apply text-blue-500 hover:underline;
 }
@@ -253,4 +258,37 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom Scrollbar Styles */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) var(--secondary);
+}
+
+/* Ensure smooth scrolling for the entire site */
+html {
+  scroll-behavior: smooth;
 }
