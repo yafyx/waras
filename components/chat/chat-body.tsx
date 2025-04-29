@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { memo, useEffect, useRef } from "react";
 
 interface ChatBodyProps {
   allMessages: Message[];
@@ -22,7 +23,7 @@ interface ChatBodyProps {
 
 // Create a separate component for the empty state to avoid hydration issues
 // This ensures the component has consistent class names between server and client
-function EmptyState() {
+const EmptyState = memo(function EmptyState() {
   return (
     <div className="w-full px-4 py-8 mt-auto">
       <div className="max-w-3xl mx-auto">
@@ -36,6 +37,7 @@ function EmptyState() {
               height={55}
               className="select-none"
               draggable="false"
+              priority
             />
           </div>
         </div>
@@ -156,14 +158,33 @@ function EmptyState() {
       </div>
     </div>
   );
-}
+});
 
-export function ChatBody({
+// Helper to determine if we should render a message or not (virtualization)
+const shouldRenderMessage = (index: number, allMessages: Message[]) => {
+  // Always render the last 10 messages for the best user experience
+  if (index >= allMessages.length - 10) return true;
+
+  // For older messages, only render every other one if we have many
+  if (allMessages.length > 20 && index % 2 !== 0) return false;
+
+  return true;
+};
+
+// Memoized component to prevent unnecessary re-renders
+export const ChatBody = memo(function ChatBody({
   allMessages,
   awaitingResponse,
   currentToolCall,
   messagesEndRef,
 }: ChatBodyProps) {
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [allMessages.length, messagesEndRef]);
+
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
       <div className="flex flex-col min-h-full justify-end">
@@ -171,14 +192,18 @@ export function ChatBody({
           <EmptyState />
         ) : (
           <section className="mx-auto w-full max-w-3xl flex flex-col gap-3 px-4 md:px-6 pb-4 pt-6 mt-auto">
-            <AnimatePresence initial={false}>
-              {allMessages.map((message, index) => (
-                <MessageItem
-                  key={message.id}
-                  message={message}
-                  isLast={index === allMessages.length - 1 && !awaitingResponse}
-                />
-              ))}
+            <AnimatePresence initial={false} presenceAffectsLayout={false}>
+              {allMessages.map((message, index) =>
+                shouldRenderMessage(index, allMessages) ? (
+                  <MessageItem
+                    key={message.id}
+                    message={message}
+                    isLast={
+                      index === allMessages.length - 1 && !awaitingResponse
+                    }
+                  />
+                ) : null
+              )}
             </AnimatePresence>
             {awaitingResponse && <Loading tool={currentToolCall} />}
             <div ref={messagesEndRef} className="h-0" />
@@ -187,4 +212,4 @@ export function ChatBody({
       </div>
     </div>
   );
-}
+});

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { SendHorizonal } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, memo } from "react";
 
 interface InputAreaProps {
   input: string;
@@ -19,7 +19,8 @@ interface InputAreaProps {
   isChatActive?: boolean;
 }
 
-export function InputArea({
+// Memoize the component to prevent unnecessary re-renders
+export const InputArea = memo(function InputArea({
   input,
   textareaRef,
   handleInputChange,
@@ -37,40 +38,66 @@ export function InputArea({
   // Use the provided ref or fall back to our internal ref
   const textareaRefToUse = textareaRef || internalRef;
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey && !awaitingResponse && input.trim()) {
-      e.preventDefault();
-      onFormSubmit(e);
-    }
-  };
+  // Memoize the event handlers to prevent recreating on each render
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (
+        e.key === "Enter" &&
+        !e.shiftKey &&
+        !awaitingResponse &&
+        input.trim()
+      ) {
+        e.preventDefault();
+        onFormSubmit(e);
+      }
+    },
+    [awaitingResponse, input, onFormSubmit]
+  );
 
-  const onDragStart = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    dragStart.current = e.clientY;
-    startHeight.current = textareaHeight;
-    document.addEventListener("mousemove", onDragMove);
-    document.addEventListener("mouseup", onDragEnd);
-    document.body.style.cursor = "ns-resize";
-  };
+  const onDragStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      dragStart.current = e.clientY;
+      startHeight.current = textareaHeight;
+      document.addEventListener("mousemove", onDragMove);
+      document.addEventListener("mouseup", onDragEnd);
+      document.body.style.cursor = "ns-resize";
+    },
+    [textareaHeight]
+  );
 
-  const onDragMove = (e: MouseEvent) => {
-    if (dragStart.current === null) return;
-    const delta = dragStart.current - e.clientY;
-    const newHeight = Math.max(
-      minHeight,
-      Math.min(maxHeight, startHeight.current + delta)
-    );
-    setTextareaHeight(newHeight);
-  };
+  const onDragMove = useCallback(
+    (e: MouseEvent) => {
+      if (dragStart.current === null) return;
+      const delta = dragStart.current - e.clientY;
+      const newHeight = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight.current + delta)
+      );
+      setTextareaHeight(newHeight);
+    },
+    [maxHeight, minHeight]
+  );
 
-  const onDragEnd = () => {
+  const onDragEnd = useCallback(() => {
     dragStart.current = null;
     document.removeEventListener("mousemove", onDragMove);
     document.removeEventListener("mouseup", onDragEnd);
     document.body.style.cursor = "";
-  };
+  }, [onDragMove]);
+
+  // Use passive event handlers for better touch performance
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (input.trim() && !awaitingResponse) {
+        onFormSubmit(e);
+      }
+    },
+    [input, awaitingResponse, onFormSubmit]
+  );
 
   return (
-    <form onSubmit={onFormSubmit} className="w-full">
+    <form onSubmit={handleSubmit} className="w-full">
       <div className="relative flex w-full flex-col">
         <div
           onMouseDown={onDragStart}
@@ -114,4 +141,4 @@ export function InputArea({
       </p>
     </form>
   );
-}
+});

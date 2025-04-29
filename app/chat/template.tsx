@@ -15,22 +15,19 @@ export default function ChatTemplate({
   // Ensure first render completes without animation delays
   useEffect(() => {
     isFirstRender.current = false;
+    // Cleanup any potential memory leaks
+    return () => {
+      isFirstRender.current = true;
+    };
   }, []);
 
-  // Clone children to ensure React keys are properly set for AnimatePresence
-  const childrenWithKeys = React.Children.map(children, (child) => {
-    if (React.isValidElement(child)) {
-      // Pass the pathname as key to ensure unique keys between routes
-      return React.cloneElement(child, {
-        key: pathname,
-      });
-    }
-    return child;
-  });
-
+  // Create a simplified version that doesn't clone all children
+  // This improves performance by avoiding unnecessary React operations
   return (
-    <AnimatePresence mode="wait" initial={isFirstRender.current ? false : true}>
-      {childrenWithKeys}
+    <AnimatePresence mode="sync" initial={isFirstRender.current ? false : true}>
+      {React.isValidElement(children)
+        ? React.cloneElement(children, { key: pathname })
+        : children}
     </AnimatePresence>
   );
 }

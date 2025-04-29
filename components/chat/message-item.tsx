@@ -3,22 +3,29 @@
 import { timeAgo } from "@/lib/utils";
 import { Message } from "ai";
 import { motion } from "framer-motion";
-import { Copy, User, Check } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
 import rehypeClassNames from "rehype-class-names";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 interface MessageItemProps {
   message: Message;
   isLast: boolean;
 }
 
-// Wrapper component for ReactMarkdown to handle the TypeScript errors
-function MarkdownContent({ content }: { content: string }) {
+// Optimized animation variants
+const messageVariants = {
+  hidden: { opacity: 0, y: 5 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0 },
+};
+
+// Memoized markdown component to prevent unnecessary re-renders
+const MarkdownContent = memo(({ content }: { content: string }) => {
   return (
     <div className="prose prose-invert max-w-none">
       <ReactMarkdown
@@ -48,9 +55,12 @@ function MarkdownContent({ content }: { content: string }) {
       </ReactMarkdown>
     </div>
   );
-}
+});
 
-export function MessageItem({ message, isLast }: MessageItemProps) {
+MarkdownContent.displayName = "MarkdownContent";
+
+// Memoized message item component
+function MessageItemComponent({ message, isLast }: MessageItemProps) {
   const isUser = message.role === "user";
   const [isCopied, setIsCopied] = useState(false);
 
@@ -69,22 +79,22 @@ export function MessageItem({ message, isLast }: MessageItemProps) {
     }
   }, [isCopied]);
 
-  // Don't try to re-parse tool responses here since that's now handled in the page components
+  // Simplified content processing
   const processedContent = message.content;
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={messageVariants}
+      transition={{ duration: 0.15 }}
       className="flex flex-col gap-2 py-4"
+      layout="position"
     >
       <p className="flex items-center gap-2 font-medium">
         {isUser ? (
-          <>
-            <span className="text-base opacity-50">Anda</span>
-          </>
+          <span className="text-base opacity-50">Anda</span>
         ) : (
           <>
             <Image
@@ -94,6 +104,7 @@ export function MessageItem({ message, isLast }: MessageItemProps) {
               height={20}
               className="select-none"
               draggable="false"
+              priority={isLast}
             />
             <span className="text-base opacity-50">Waras AI</span>
           </>
@@ -138,3 +149,6 @@ export function MessageItem({ message, isLast }: MessageItemProps) {
     </motion.section>
   );
 }
+
+// Export memoized component to prevent re-rendering when props haven't changed
+export const MessageItem = memo(MessageItemComponent);

@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 import Image from "next/image";
+import { memo } from "react";
 
-export function ChatHeader() {
+// Memoize the header to prevent re-renders when parent components change
+export const ChatHeader = memo(function ChatHeader() {
   return (
     <header className="lg:hidden sticky top-0 z-20 flex items-center justify-between p-3 backdrop-blur-md bg-neutral-900/80 border-b border-neutral-800">
       <div className="flex items-center gap-2">
@@ -15,6 +17,7 @@ export function ChatHeader() {
           height={28}
           className="select-none"
           draggable="false"
+          priority
         />
         <h1 className="text-base font-semibold">Waras AI</h1>
       </div>
@@ -27,4 +30,4 @@ export function ChatHeader() {
       </Button>
     </header>
   );
-}
+});

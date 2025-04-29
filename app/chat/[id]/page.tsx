@@ -6,8 +6,9 @@ import { motion } from "framer-motion";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { ChatHeader, ChatBody, InputArea } from "@/components/chat";
+import dynamic from "next/dynamic";
 
-// Animation variants
+// Animation variants with reduced duration
 const variants = {
   hidden: { opacity: 0 },
   enter: { opacity: 1 },
@@ -36,24 +37,69 @@ export default function ChatPage({}: ChatPageProps) {
     );
   };
 
-  // Load existing chat from localStorage
+  // Load existing chat from localStorage - with debouncing
   useEffect(() => {
-    if (chatId) {
-      const savedChat = localStorage.getItem(`chat-${chatId}`);
-      if (savedChat) {
-        try {
+    if (!chatId) return;
+
+    const loadChat = () => {
+      try {
+        const savedChat = localStorage.getItem(`chat-${chatId}`);
+        if (savedChat) {
           const parsedChat = JSON.parse(savedChat);
           setInitialMessages(parsedChat.messages || []);
-          setHasLoadedInitialMessages(true);
-        } catch (error) {
-          console.error("Error parsing saved chat:", error);
-          setHasLoadedInitialMessages(true);
         }
-      } else {
+      } catch (error) {
+        console.error("Error parsing saved chat:", error);
+      } finally {
         setHasLoadedInitialMessages(true);
       }
-    }
+    };
+
+    // Use requestAnimationFrame to load chat data during idle time
+    requestAnimationFrame(loadChat);
+
+    return () => {
+      setHasLoadedInitialMessages(false);
+    };
   }, [chatId]);
+
+  const chatOptions = useMemo(
+    () => ({
+      maxSteps: 5,
+      id: chatId,
+      initialMessages: hasLoadedInitialMessages ? initialMessages : undefined,
+      onToolCall({ toolCall }: { toolCall: { toolName: string } }) {
+        setToolCall(toolCall.toolName);
+        setIsResponseComplete(false);
+      },
+      onFinish: () => {
+        setIsResponseComplete(true);
+
+        // Save chat with a small delay and throttle
+        if (messages.length > 0) {
+          // Throttle saving to localStorage
+          const timeoutId = setTimeout(() => {
+            try {
+              const filteredMessages = getFilteredMessages(messages);
+              // Use a smaller JSON representation
+              localStorage.setItem(
+                `chat-${chatId}`,
+                JSON.stringify({
+                  id: chatId,
+                  messages: filteredMessages,
+                })
+              );
+            } catch (error) {
+              console.error("Error saving chat:", error);
+            }
+          }, 500);
+
+          return () => clearTimeout(timeoutId);
+        }
+      },
+    }),
+    [chatId, hasLoadedInitialMessages, initialMessages]
+  );
 
   const {
     messages,
@@ -63,39 +109,7 @@ export default function ChatPage({}: ChatPageProps) {
     isLoading,
     status,
     setMessages,
-  } = useChat({
-    maxSteps: 5, // Increased from 4 to 5
-    // Removed experimental_throttle which may be causing incomplete responses
-    id: chatId,
-    initialMessages: hasLoadedInitialMessages ? initialMessages : undefined,
-    onToolCall({ toolCall }: { toolCall: { toolName: string } }) {
-      setToolCall(toolCall.toolName);
-      setIsResponseComplete(false);
-    },
-    onFinish: () => {
-      setIsResponseComplete(true);
-
-      // When the response is complete, save the updated chat
-      if (messages.length > 0) {
-        // Small delay to ensure all message updates are processed
-        const timeoutId = setTimeout(() => {
-          // Filter messages to include only user and assistant messages
-          const filteredMessages = getFilteredMessages(messages);
-
-          // Save chat to localStorage
-          localStorage.setItem(
-            `chat-${chatId}`,
-            JSON.stringify({
-              id: chatId,
-              messages: filteredMessages,
-            })
-          );
-        }, 300);
-
-        return () => clearTimeout(timeoutId); // Clean up timeout
-      }
-    },
-  });
+  } = useChat(chatOptions);
 
   // Set initial messages after loading
   useEffect(() => {
@@ -112,17 +126,25 @@ export default function ChatPage({}: ChatPageProps) {
     return getFilteredMessages(messages);
   }, [messages]);
 
-  // Also save messages to localStorage whenever they change
+  // Throttled localStorage updates
   useEffect(() => {
-    if (messages.length > 0 && isResponseComplete) {
-      localStorage.setItem(
-        `chat-${chatId}`,
-        JSON.stringify({
-          id: chatId,
-          messages: allMessages,
-        })
-      );
-    }
+    if (messages.length === 0 || !isResponseComplete) return;
+
+    const saveTimeout = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          `chat-${chatId}`,
+          JSON.stringify({
+            id: chatId,
+            messages: allMessages,
+          })
+        );
+      } catch (error) {
+        console.error("Error saving messages to localStorage:", error);
+      }
+    }, 1000);
+
+    return () => clearTimeout(saveTimeout);
   }, [messages, chatId, isResponseComplete, allMessages]);
 
   const currentToolCall = useMemo(() => {
@@ -175,14 +197,14 @@ export default function ChatPage({}: ChatPageProps) {
       animate="enter"
       exit="exit"
       variants={variants}
-      transition={{ duration: 0.15, type: "tween" }}
+      transition={{ duration: 0.1, type: "tween" }}
       className="flex flex-col h-screen"
     >
       <ChatHeader />
 
       {/* Main content area that scrolls */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        <div className="flex-1 overflow-y-auto flex flex-col justify-end">
+        <div className="flex-1 overflow-y-auto">
           <ChatBody
             allMessages={allMessages}
             awaitingResponse={awaitingResponse}
