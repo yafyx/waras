@@ -3,12 +3,14 @@
 import { timeAgo } from "@/lib/utils";
 import { Message } from "ai";
 import { motion } from "framer-motion";
-import { Copy, User } from "lucide-react";
+import { Copy, User, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
 import rehypeClassNames from "rehype-class-names";
+import Image from "next/image";
+import { useState, useEffect } from "react";
 
 interface MessageItemProps {
   message: Message;
@@ -50,10 +52,22 @@ function MarkdownContent({ content }: { content: string }) {
 
 export function MessageItem({ message, isLast }: MessageItemProps) {
   const isUser = message.role === "user";
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    navigator.clipboard.writeText(message.content).then(() => {
+      setIsCopied(true);
+    });
   };
+
+  useEffect(() => {
+    if (isCopied) {
+      const timer = setTimeout(() => {
+        setIsCopied(false);
+      }, 2000); // Reset after 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isCopied]);
 
   // Don't try to re-parse tool responses here since that's now handled in the page components
   const processedContent = message.content;
@@ -69,15 +83,17 @@ export function MessageItem({ message, isLast }: MessageItemProps) {
       <p className="flex items-center gap-2 font-medium">
         {isUser ? (
           <>
-            <User className="size-6 text-blue-400" />
             <span className="text-base opacity-50">Anda</span>
           </>
         ) : (
           <>
-            <img
-              className="size-6 rounded-full"
-              src="/logo.svg"
+            <Image
+              src="/waras.png"
               alt="Waras AI Logo"
+              width={20}
+              height={20}
+              className="select-none"
+              draggable="false"
             />
             <span className="text-base opacity-50">Waras AI</span>
           </>
@@ -98,13 +114,21 @@ export function MessageItem({ message, isLast }: MessageItemProps) {
             {timeAgo(message.createdAt)}
           </p>
           <button
-            className="text-neutral-400 hover:text-white"
+            className="flex items-center gap-1.5 text-neutral-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleCopy}
+            disabled={isCopied}
           >
-            <p className="flex items-center gap-3 font-medium">
-              <Copy className="size-3" />
-              Copy
-            </p>
+            {isCopied ? (
+              <>
+                <Check className="size-3" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="size-3" />
+                Copy
+              </>
+            )}
           </button>
           <p className="ml-auto flex items-center gap-3 font-medium opacity-20">
             <span className="hidden lg:block text-sm">Waras AI</span>

@@ -83,7 +83,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
           <DropdownMenuContent
             align="start"
             sideOffset={0}
-            className="w-[266px] bg-[#121212] text-white border-neutral-800 rounded-b-2xl rounded-t-none p-1"
+            className="w-[266px] bg-[#121212] text-white border-b border-neutral-800 rounded-b-2xl rounded-t-none p-1"
             style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
           >
             <Link href="/" passHref>
@@ -236,7 +236,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <Search className="size-10 text-neutral-600 mb-2" />
                 <p className="text-sm text-neutral-500">
-                  No chats found with "{searchQuery}"
+                  No chats found with &quot;{searchQuery}&quot;
                 </p>
                 <button
                   onClick={() => setSearchQuery("")}

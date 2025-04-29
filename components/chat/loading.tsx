@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { LoadingIcon } from "@/components/icons";
+import Image from "next/image";
 
 interface LoadingProps {
   tool?: string;
@@ -24,10 +25,13 @@ export function Loading({ tool }: LoadingProps) {
       className="flex flex-col gap-2 py-4"
     >
       <p className="flex items-center gap-2 font-medium">
-        <img
-          className="size-6 rounded-full"
-          src="/logo.svg"
+        <Image
+          src="/waras.png"
           alt="Waras AI Logo"
+          width={28}
+          height={28}
+          className="select-none"
+          draggable="false"
         />
         <span className="text-base opacity-50">Waras AI</span>
       </p>
