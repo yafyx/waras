@@ -3,7 +3,7 @@
 import { timeAgo } from "@/lib/utils";
 import type { Message, ToolCall } from "ai";
 import { motion } from "framer-motion";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, ChevronDown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeSlug from "rehype-slug";
@@ -11,6 +11,12 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeClassNames from "rehype-class-names";
 import Image from "next/image";
 import { useState, useEffect, memo } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface MessageItemProps {
   message: Message;
@@ -26,6 +32,12 @@ const messageVariants = {
 
 // Memoized markdown component to prevent unnecessary re-renders
 const MarkdownContent = memo(({ content }: { content: string }) => {
+  // Split content to separate main content and sources
+  const parts = content.split(/\n\n+Sumber:/);
+  const mainContent = parts[0];
+  const hasSources = parts.length > 1;
+  const sourcesContent = hasSources ? parts[1].trim() : "";
+
   return (
     <div className="prose prose-invert max-w-none">
       <ReactMarkdown
@@ -51,8 +63,53 @@ const MarkdownContent = memo(({ content }: { content: string }) => {
           ],
         ]}
       >
-        {content}
+        {mainContent}
       </ReactMarkdown>
+
+      {hasSources && (
+        <div className="mt-6 border-t border-neutral-700/50 text-neutral-400 text-xs">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="sources" className="border-b-0">
+              <AccordionTrigger className="flex items-center gap-2 py-2 text-xs hover:text-white transition-colors duration-200 hover:no-underline font-medium group cursor-pointer">
+                <span className="group-hover:text-white transition-colors duration-200">
+                  Referensi & Sumber Informasi
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-1">
+                <div className="hover:border-neutral-400 transition-colors duration-200 text-xs">
+                  <div className="hover:text-neutral-300 transition-colors duration-200">
+                    <ReactMarkdown
+                      rehypePlugins={[
+                        [
+                          rehypeExternalLinks,
+                          {
+                            target: "_blank",
+                            rel: ["nofollow", "noopener", "noreferrer"],
+                            properties: {
+                              className:
+                                "text-blue-400 hover:text-blue-300 transition-colors duration-200 hover:underline",
+                            },
+                          },
+                        ],
+                        [
+                          rehypeClassNames,
+                          {
+                            li: "mb-2 hover:text-neutral-200 transition-colors duration-200",
+                            p: "mb-2 hover:text-neutral-200 transition-colors duration-200",
+                            a: "text-blue-400 hover:text-blue-300 transition-colors duration-200 hover:underline",
+                          },
+                        ],
+                      ]}
+                    >
+                      {sourcesContent}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      )}
     </div>
   );
 });
@@ -122,9 +179,6 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
     );
   }
 
-  // Simplified content processing
-  const processedContent = message.content;
-
   return (
     <motion.section
       initial="hidden"
@@ -158,7 +212,7 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
         {isUser ? (
           <p>{message.content}</p>
         ) : (
-          <MarkdownContent content={processedContent} />
+          <MarkdownContent content={message.content} />
         )}
       </div>
 
@@ -168,7 +222,7 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
             {timeAgo(message.createdAt)}
           </p>
           <button
-            className="flex items-center gap-1.5 text-neutral-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             onClick={handleCopy}
             disabled={isCopied}
             aria-label={isCopied ? "Copied" : "Copy message"}
@@ -176,12 +230,12 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
             {isCopied ? (
               <>
                 <Check className="size-3" />
-                Copied!
+                <span className="capitalize">Disalin!</span>
               </>
             ) : (
               <>
                 <Copy className="size-3" />
-                Copy
+                <span className="capitalize">Salin</span>
               </>
             )}
           </button>

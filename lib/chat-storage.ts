@@ -19,12 +19,38 @@ export function saveChatToLocalStorage(id: string, messages: Message[]): boolean
             return false;
         }
 
-        // Find the timestamp from the latest message or use current time
-        const timestamp = messages.length > 0 && messages[messages.length - 1].createdAt
-            ? (typeof messages[messages.length - 1].createdAt === 'string'
-                ? messages[messages.length - 1].createdAt
-                : new Date().toISOString())
-            : new Date().toISOString();
+        // Check if there's an existing chat and get its timestamp
+        let existingTimestamp: string | null = null;
+        let existingChat: string | null = null;
+        try {
+            existingChat = localStorage.getItem(`chat-${id}`);
+            if (existingChat) {
+                const parsedChat = JSON.parse(existingChat);
+                existingTimestamp = parsedChat.timestamp;
+            }
+        } catch (e) {
+            console.error("Error reading existing chat:", e);
+        }
+
+        // Only update timestamp if:
+        // 1. There's no existing timestamp, or
+        // 2. The message count has changed (new messages added)
+        let timestamp: string = existingTimestamp || "";
+        if (!timestamp || (existingChat && JSON.parse(existingChat).messages.length !== messages.length)) {
+            // Get the last message's createdAt or use current time
+            let newTimestamp: string = new Date().toISOString();
+
+            if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage.createdAt) {
+                    newTimestamp = typeof lastMessage.createdAt === 'string'
+                        ? lastMessage.createdAt
+                        : new Date(lastMessage.createdAt).toISOString();
+                }
+            }
+
+            timestamp = newTimestamp;
+        }
 
         localStorage.setItem(
             `chat-${id}`,

@@ -20,6 +20,10 @@ export function timeAgo(date: Date | string | undefined): string {
   }
 
   const seconds = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
+
+  // Only use "baru saja" for timestamps in the last 10 seconds
+  if (seconds < 10) return "baru saja";
+
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + " tahun lalu";
   interval = seconds / 2592000;
@@ -29,6 +33,7 @@ export function timeAgo(date: Date | string | undefined): string {
   interval = seconds / 3600;
   if (interval > 1) return Math.floor(interval) + " jam lalu";
   interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + " menit lalu";
-  return "baru saja";
+
+  // Use minutes for anything less than an hour but more than 10 seconds
+  return Math.max(1, Math.floor(interval)) + " menit lalu";
 }
