@@ -112,37 +112,32 @@ export default function ChatPage({}: ChatPageProps) {
     isLoading,
     status,
     setMessages,
+    append,
   } = useChat(chatOptions);
 
   // Set initial messages after loading and auto-submit if needed
   useEffect(() => {
     if (
       hasLoadedInitialMessages &&
-      initialMessages.length > 0 &&
-      messages.length === 0
+      initialMessages.length === 1 &&
+      messages.length === 0 &&
+      initialMessages[0].role === "user"
     ) {
-      setMessages(initialMessages);
-
-      // Auto-submit the first message if it's the only message (coming from root page)
-      if (initialMessages.length === 1 && initialMessages[0].role === "user") {
-        // We need to wait for the messages to be set before submitting
-        const timer = setTimeout(() => {
-          setIsResponseComplete(false);
-          const event = new CustomEvent(
-            "submit"
-          ) as unknown as React.FormEvent<HTMLFormElement>;
-          handleSubmit(event);
-        }, 300);
-
-        return () => clearTimeout(timer);
-      }
+      setMessages([]); // Clear messages before sending
+      // Use append to send the user message to the model
+      append({
+        id: initialMessages[0].id,
+        role: initialMessages[0].role,
+        content: initialMessages[0].content,
+        createdAt: initialMessages[0].createdAt,
+      });
     }
   }, [
     hasLoadedInitialMessages,
     initialMessages,
     messages.length,
     setMessages,
-    handleSubmit,
+    append,
   ]);
 
   const allMessages = useMemo(() => {
