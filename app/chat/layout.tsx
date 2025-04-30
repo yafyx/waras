@@ -50,15 +50,17 @@ export default function ChatLayout({
               const firstUserMessage =
                 data.messages?.find((m: ChatMessage) => m.role === "user")
                   ?.content || "New Chat";
+              const lastMessageTimestamp =
+                data.messages?.length > 0
+                  ? data.messages[data.messages.length - 1].createdAt
+                  : Date.now();
               return {
                 id,
                 messages: data.messages || [],
                 firstMessage:
                   firstUserMessage.substring(0, 30) +
                   (firstUserMessage.length > 30 ? "..." : ""),
-                timestamp: new Date(
-                  data.messages?.[0]?.createdAt || Date.now()
-                ).toLocaleDateString(),
+                timestamp: new Date(lastMessageTimestamp).toISOString(),
               };
             } catch (e) {
               console.error(`Error parsing chat ${id}:`, e);
@@ -66,14 +68,14 @@ export default function ChatLayout({
                 id,
                 messages: [],
                 firstMessage: "Error loading chat",
-                timestamp: new Date().toLocaleDateString(),
+                timestamp: new Date().toISOString(),
               };
             }
           })
           .filter(Boolean)
           .sort((a, b) => {
-            const dateA = new Date(a.messages[0]?.createdAt || 0);
-            const dateB = new Date(b.messages[0]?.createdAt || 0);
+            const dateA = new Date(a.timestamp || 0);
+            const dateB = new Date(b.timestamp || 0);
             return dateB.getTime() - dateA.getTime();
           });
 
