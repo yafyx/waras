@@ -127,7 +127,7 @@ function InitialLayout({
       >
         <div className="relative flex w-full max-w-3xl flex-col items-center justify-center gap-8 px-4 md:px-6">
           {/* Logo and Title */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mt-8">
             <div className="flex items-center justify-center h-[60px]">
               <Image
                 src="/waras.png"
@@ -174,6 +174,17 @@ function InitialLayout({
             </svg>
             AI Chat Psikologi yang Aman & Anonim.
           </p>
+        </div>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 opacity-40">
+          <div className="flex gap-3">
+            <a
+              href="https://git.new/yfyx"
+              target="_blank"
+              className="font-medium hover:text-gray-400 transition-colors"
+            >
+              yfyx
+            </a>
+          </div>
         </div>
       </motion.div>
     </div>
