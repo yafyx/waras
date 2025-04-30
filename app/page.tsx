@@ -27,6 +27,7 @@ import {
   Share2,
   Copy,
   SendHorizonal,
+  ArrowUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
@@ -321,7 +322,7 @@ function ActiveChatLayout({
           <Button
             size="icon"
             variant="default"
-            className="rounded-xl h-8 w-8 bg-blue-600 hover:bg-blue-700"
+            className="rounded-xl h-8 w-8 bg-neutral-700 hover:bg-neutral-600"
           >
             <Plus className="size-3" />
           </Button>
@@ -393,7 +394,7 @@ function MessageItem({ message, isLast }: MessageItemProps) {
       <p className="flex items-center gap-2 font-medium">
         {isUser ? (
           <>
-            <User className="size-6 text-blue-400" />
+            <User className="size-6 text-neutral-400" />
             <span className="text-base opacity-50">Anda</span>
           </>
         ) : (
@@ -418,7 +419,7 @@ function MessageItem({ message, isLast }: MessageItemProps) {
             className="text-sm text-neutral-100 overflow-hidden"
             id="markdown"
           >
-            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-p:my-2 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-pre:bg-[#282c34] prose-pre:p-3 prose-code:bg-neutral-700 dark:prose-code:bg-neutral-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:rounded overflow-hidden">
+            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-p:my-2 prose-a:text-neutral-400 prose-a:no-underline hover:prose-a:underline prose-pre:bg-[#282c34] prose-pre:p-3 prose-code:bg-neutral-700 dark:prose-code:bg-neutral-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:rounded overflow-hidden">
               <ReactMarkdown
                 rehypePlugins={[
                   rehypeSlug,
@@ -445,7 +446,7 @@ function MessageItem({ message, isLast }: MessageItemProps) {
                       <span>Referensi & Sumber Informasi</span>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-0">
-                      <div className="pl-6 mt-2 border-l-2 border-neutral-600 prose prose-sm dark:prose-invert prose-a:text-blue-400 hover:prose-a:underline">
+                      <div className="pl-6 mt-2 border-l-2 border-neutral-600 prose prose-sm dark:prose-invert prose-a:text-neutral-400 hover:prose-a:underline">
                         <ReactMarkdown
                           rehypePlugins={[
                             [
@@ -704,7 +705,7 @@ function InputArea({
             maxHeight: `${maxHeight}px`,
           }}
           className={cn(
-            "flex w-full border border-neutral-700 bg-neutral-800/80 px-4 py-3 text-base text-neutral-100 shadow-md placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 overflow-y-auto pr-12 rounded-t-xl rounded-b-none"
+            "flex w-full border border-neutral-700 bg-neutral-800/80 px-4 py-3 text-base text-neutral-100 shadow-md placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-500 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 overflow-y-auto pr-12 rounded-t-xl rounded-b-none"
           )}
         />
         <Button
@@ -712,11 +713,11 @@ function InputArea({
           size="icon"
           disabled={awaitingResponse || !input.trim()}
           className={cn(
-            "absolute right-2 top-2 flex items-center justify-center rounded-lg bg-blue-600 text-white transition-colors duration-200 ease-in-out hover:bg-blue-700 disabled:bg-neutral-600 disabled:opacity-70",
-            "h-8 w-8"
+            "absolute right-3 top-3 flex items-center justify-center rounded-full bg-white text-black transition-all duration-200 ease-in-out hover:scale-110 disabled:bg-neutral-600 disabled:opacity-50 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 active:bg-white active:text-neutral-900 active:transition-all active:duration-100",
+            "h-10 w-10 cursor-pointer"
           )}
         >
-          <SendHorizonal className="size-4" />
+          <ArrowUp className="size-5 stroke-[2]" />
         </Button>
         <div
           onMouseDown={onDragStart}
