@@ -4,7 +4,7 @@ import { Message } from "ai";
 import { useChat } from "ai/react";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect, useMemo, Suspense } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ChatHeader, ChatBody, InputArea } from "@/components/chat";
 
@@ -20,11 +20,9 @@ interface ChatPageProps {}
 function ChatPageContent() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [toolCall, setToolCall] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [hasAutoSubmitted, setHasAutoSubmitted] = useState(false);
   const [isResponseComplete, setIsResponseComplete] = useState(true);
   const [chatId] = useState(() => uuidv4());
 
@@ -45,39 +43,13 @@ function ChatPageContent() {
     setInput,
   } = useChat({
     id: chatId,
-    maxSteps: 5, // Increased from 4 to 5 to allow for more complex interactions
-    // Removed experimental_throttle which may be causing incomplete responses
+    maxSteps: 5,
     onToolCall({ toolCall }: { toolCall: { toolName: string } }) {
       setToolCall(toolCall.toolName);
       setIsResponseComplete(false);
     },
     onFinish: () => {
       setIsResponseComplete(true);
-
-      // When the response is complete, check if we have messages and redirect to a specific chat ID
-      if (messages.length > 0) {
-        // Save chat to localStorage with all messages including the latest response
-        const timeoutId = setTimeout(() => {
-          // Small delay to ensure all message updates are processed
-          // Filter messages to include only user and assistant messages
-          const filteredMessages = getFilteredMessages(messages);
-
-          localStorage.setItem(
-            `chat-${chatId}`,
-            JSON.stringify({
-              id: chatId,
-              messages: filteredMessages,
-            })
-          );
-
-          // Redirect to the chat with the UUID if not already there
-          if (!pathname.includes(`/chat/${chatId}`)) {
-            router.push(`/chat/${chatId}`);
-          }
-        }, 300);
-
-        return () => clearTimeout(timeoutId); // Clean up timeout
-      }
     },
   });
 
@@ -86,43 +58,10 @@ function ChatPageContent() {
     return getFilteredMessages(messages);
   }, [messages]);
 
-  // Check for pending query on page load
-  useEffect(() => {
-    const pendingQuery = localStorage.getItem("pendingChatQuery");
-    const queryParam = searchParams.get("query");
-
-    if (pendingQuery && !hasAutoSubmitted) {
-      // Clear the pending query
-      localStorage.removeItem("pendingChatQuery");
-      setInput(pendingQuery);
-
-      // Use setTimeout to ensure state update has completed
-      setTimeout(() => {
-        const event = new Event(
-          "submit"
-        ) as unknown as React.FormEvent<HTMLFormElement>;
-        handleSubmit(event);
-        setHasAutoSubmitted(true);
-      }, 100);
-    } else if (queryParam && !hasAutoSubmitted) {
-      // Handle query from URL parameters
-      const decodedQuery = decodeURIComponent(queryParam);
-      setInput(decodedQuery);
-
-      // Submit automatically
-      setTimeout(() => {
-        const event = new Event(
-          "submit"
-        ) as unknown as React.FormEvent<HTMLFormElement>;
-        handleSubmit(event);
-        setHasAutoSubmitted(true);
-      }, 100);
-    }
-  }, [searchParams, hasAutoSubmitted, setInput, handleSubmit]);
-
-  // Save messages to localStorage whenever they change
+  // Save messages to localStorage whenever they change and redirect if needed
   useEffect(() => {
     if (messages.length > 0 && isResponseComplete) {
+      // Save chat state to localStorage
       localStorage.setItem(
         `chat-${chatId}`,
         JSON.stringify({
@@ -130,8 +69,17 @@ function ChatPageContent() {
           messages: allMessages,
         })
       );
+
+      // Trigger refresh of the chat list
+      window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
+
+      // Only redirect if we have a complete conversation and aren't already at the specific chat URL
+      if (messages.length >= 2 && !pathname.includes(`/chat/${chatId}`)) {
+        // Use replace instead of push to avoid back button issues
+        router.replace(`/chat/${chatId}`);
+      }
     }
-  }, [messages, chatId, isResponseComplete, allMessages]);
+  }, [messages, chatId, isResponseComplete, allMessages, pathname, router]);
 
   const currentToolCall = useMemo(() => {
     const tools = messages.slice(-1)[0]?.toolInvocations;

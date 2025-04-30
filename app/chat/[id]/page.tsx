@@ -89,6 +89,9 @@ export default function ChatPage({}: ChatPageProps) {
                   messages: filteredMessages,
                 })
               );
+
+              // Trigger refresh of the chat list
+              window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
             } catch (error) {
               console.error("Error saving chat:", error);
             }
@@ -111,7 +114,7 @@ export default function ChatPage({}: ChatPageProps) {
     setMessages,
   } = useChat(chatOptions);
 
-  // Set initial messages after loading
+  // Set initial messages after loading and auto-submit if needed
   useEffect(() => {
     if (
       hasLoadedInitialMessages &&
@@ -120,10 +123,27 @@ export default function ChatPage({}: ChatPageProps) {
     ) {
       setMessages(initialMessages);
 
-      // Don't use auto-scrolling for initial load - let the flex layout position it naturally
-      // This prevents the jarring/blinking effect when opening a chat
+      // Auto-submit the first message if it's the only message (coming from root page)
+      if (initialMessages.length === 1 && initialMessages[0].role === "user") {
+        // We need to wait for the messages to be set before submitting
+        const timer = setTimeout(() => {
+          setIsResponseComplete(false);
+          const event = new CustomEvent(
+            "submit"
+          ) as unknown as React.FormEvent<HTMLFormElement>;
+          handleSubmit(event);
+        }, 300);
+
+        return () => clearTimeout(timer);
+      }
     }
-  }, [hasLoadedInitialMessages, initialMessages, messages.length, setMessages]);
+  }, [
+    hasLoadedInitialMessages,
+    initialMessages,
+    messages.length,
+    setMessages,
+    handleSubmit,
+  ]);
 
   const allMessages = useMemo(() => {
     return getFilteredMessages(messages);
@@ -142,6 +162,9 @@ export default function ChatPage({}: ChatPageProps) {
             messages: allMessages,
           })
         );
+
+        // Trigger refresh of the chat list
+        window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
       } catch (error) {
         console.error("Error saving messages to localStorage:", error);
       }

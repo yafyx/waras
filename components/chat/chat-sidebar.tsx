@@ -20,7 +20,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { timeAgo } from "@/lib/utils";
 
 interface ChatMessage {
@@ -54,6 +54,12 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
         chat.firstMessage.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : chatList;
+
+  // Handler for new chat button to dispatch a custom event
+  const handleNewChat = () => {
+    // Dispatch a custom event that will be caught by the layout component
+    window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
+  };
 
   return (
     <nav
@@ -100,7 +106,10 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               </DropdownMenuItem>
             </Link>
             <Link href="/chat" passHref>
-              <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
+              <DropdownMenuItem
+                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
+                onClick={handleNewChat}
+              >
                 <svg
                   width="18"
                   height="18"
@@ -151,7 +160,10 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
 
         <div className="p-3">
           <Link href="/chat" className="block w-full">
-            <Button className="w-full justify-start gap-2 bg-white text-black hover:bg-neutral-100 transition-colors duration-300 ease-in-out hover:opacity-85">
+            <Button
+              className="w-full justify-start gap-2 bg-white text-black hover:bg-neutral-100 transition-colors duration-300 ease-in-out hover:opacity-85"
+              onClick={handleNewChat}
+            >
               <Plus className="size-4" />
               <span>New Chat</span>
             </Button>

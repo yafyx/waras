@@ -109,8 +109,20 @@ export default function ChatLayout({
       }
     };
 
+    // Listen for storage events (from other tabs/windows)
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+
+    // Listen for custom refresh events (from within the same tab)
+    const handleCustomRefresh = () => {
+      loadChatList();
+    };
+
+    window.addEventListener("waras:refreshChatList", handleCustomRefresh);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("waras:refreshChatList", handleCustomRefresh);
+    };
   }, [loadChatList]);
 
   // Memoize the return value to prevent unnecessary rerenders

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Message } from "ai";
-import { useChat } from "@ai-sdk/react";
+import { useChat } from "ai/react";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -41,48 +41,20 @@ import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { InfoBoxes } from "@/components/info-boxes";
+import { v4 as uuidv4 } from "uuid";
 
 interface SubmitEventTypes {
   preventDefault: () => void;
 }
 
-export default function Chat() {
-  const [toolCall, setToolCall] = useState<string>();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+export default function Home() {
+  const [input, setInput] = useState("");
   const router = useRouter();
+  const [awaitingResponse, setAwaitingResponse] = useState(false);
 
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat({
-    maxSteps: 4,
-    experimental_throttle: 50,
-    onToolCall({ toolCall }: { toolCall: { toolName: string } }) {
-      setToolCall(toolCall.toolName);
-    },
-    onError: () => {
-      toast.error(
-        "Batas permintaan tercapai! Silakan coba lagi dalam beberapa saat ya."
-      );
-    },
-  });
-
-  const isChatActive = useMemo(() => messages.length > 0, [messages]);
-
-  const currentToolCall = useMemo(() => {
-    const tools = messages?.slice(-1)[0]?.toolInvocations;
-    if (tools && toolCall === tools[0].toolName) {
-      return tools[0].toolName;
-    }
-    return undefined;
-  }, [toolCall, messages]);
-
-  const awaitingResponse = useMemo(() => {
-    return status === "submitted" || status === "streaming";
-  }, [status]);
-
-  const allMessages = useMemo(() => {
-    return messages.filter(
-      (m: Message) => m.role === "user" || m.role === "assistant"
-    );
-  }, [messages]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
 
   const onFormSubmit = (
     e:
@@ -91,32 +63,44 @@ export default function Chat() {
   ) => {
     e.preventDefault();
     if (input.trim().length >= 3 && !awaitingResponse) {
-      const userInput = input.trim();
-      localStorage.setItem("pendingChatQuery", userInput);
-      router.push(`/chat?query=${encodeURIComponent(userInput)}`);
+      setAwaitingResponse(true);
+
+      // Generate a new chat ID
+      const chatId = uuidv4();
+
+      // Create user message
+      const userMessage: Message = {
+        id: uuidv4(),
+        role: "user",
+        content: input.trim(),
+        createdAt: new Date(),
+      };
+
+      // Save to localStorage
+      localStorage.setItem(
+        `chat-${chatId}`,
+        JSON.stringify({
+          id: chatId,
+          messages: [userMessage],
+        })
+      );
+
+      // Trigger refresh of the chat list
+      window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
+
+      // Redirect directly to the chat ID page
+      router.push(`/chat/${chatId}`);
     }
   };
 
   return (
     <AnimatePresence mode="wait">
-      {!isChatActive ? (
-        <InitialLayout
-          input={input}
-          handleInputChange={handleInputChange}
-          onFormSubmit={onFormSubmit}
-          awaitingResponse={awaitingResponse}
-        />
-      ) : (
-        <ActiveChatLayout
-          input={input}
-          handleInputChange={handleInputChange}
-          onFormSubmit={onFormSubmit}
-          awaitingResponse={awaitingResponse}
-          allMessages={allMessages}
-          currentToolCall={currentToolCall}
-          messagesEndRef={messagesEndRef}
-        />
-      )}
+      <InitialLayout
+        input={input}
+        handleInputChange={handleInputChange}
+        onFormSubmit={onFormSubmit}
+        awaitingResponse={awaitingResponse}
+      />
     </AnimatePresence>
   );
 }
