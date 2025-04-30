@@ -11,10 +11,10 @@ interface LoadingProps {
 export function Loading({ tool }: LoadingProps) {
   const toolName =
     tool === "getInformation"
-      ? "Sedang mencari informasi"
+      ? "Mencari informasi dari basis pengetahuan"
       : tool === "understandQuery"
-      ? "Sedang menganalisis pertanyaan"
-      : "Sedang berpikir";
+      ? "Menganalisis pertanyaan Anda"
+      : "Sedang menyusun respons";
 
   return (
     <motion.div

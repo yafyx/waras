@@ -90,21 +90,47 @@ function ChatPageContent() {
     },
     onError: (error) => {
       console.error("Chat error:", error);
+
+      // Create more user-friendly error message based on error type
+      let errorMessage =
+        "Something went wrong with the chat. Please try again.";
+
+      // Check if it's a model overload error
+      if (error.message && error.message.toLowerCase().includes("overloaded")) {
+        errorMessage =
+          "The AI service is experiencing high traffic. Please try again in a moment.";
+      } else if (error.message) {
+        // Use the actual error message if available
+        errorMessage = error.message;
+      }
+
       // Add system message to inform user of error - wrapped in startTransition
       startTransition(() => {
-        const errorMessage: Message = {
+        const errorMsg: Message = {
           id: Date.now().toString() + "-error",
           role: "system",
-          content: `Error: ${
-            error.message ||
-            "Something went wrong with the chat. Please try again."
-          }`,
+          content: `Error: ${errorMessage}`,
           createdAt: new Date(),
         };
-        addOptimisticMessage(errorMessage);
+        addOptimisticMessage(errorMsg);
       });
+
       setIsResponseComplete(true);
-      toast.error("Chat error. Please try again.");
+      toast.error(errorMessage, {
+        duration: 5000,
+        action: {
+          label: "Retry",
+          onClick: () => {
+            // Attempt to resubmit the last user message
+            const lastUserMessage = [...messages]
+              .reverse()
+              .find((m) => m.role === "user");
+            if (lastUserMessage) {
+              setInput(lastUserMessage.content);
+            }
+          },
+        },
+      });
     },
   });
 
@@ -148,17 +174,37 @@ function ChatPageContent() {
   ]);
 
   const currentToolCall = useMemo(() => {
-    const tools = messages.slice(-1)[0]?.toolInvocations;
-    if (tools && toolCall === tools[0]?.toolName) {
-      return tools[0].toolName;
-    } else {
+    // Check the last message for any tool invocations
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage || lastMessage.role !== "assistant") {
       return undefined;
     }
-  }, [toolCall, messages]);
+
+    // Use type assertion to access the tools property
+    const tools = ("tools" in lastMessage ? lastMessage.tools : []) as Array<{
+      state: string;
+      toolName: string;
+    }>;
+
+    if (!tools || tools.length === 0) {
+      return undefined;
+    }
+
+    // Find any tool invocation that is in progress (partial-call or call state)
+    const inProgressToolInvocation = tools.find(
+      (tool) => tool.state === "partial-call" || tool.state === "call"
+    );
+
+    return inProgressToolInvocation?.toolName;
+  }, [messages]);
 
   const awaitingResponse = useMemo(() => {
-    return status === "submitted" || status === "streaming";
-  }, [status]);
+    return (
+      status === "submitted" ||
+      status === "streaming" ||
+      currentToolCall !== undefined
+    );
+  }, [status, currentToolCall]);
 
   // Helper function to handle form submission with optional direct input
   const handleFormSubmit = async (

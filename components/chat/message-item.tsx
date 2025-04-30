@@ -1,7 +1,7 @@
 "use client";
 
 import { timeAgo } from "@/lib/utils";
-import { Message } from "ai";
+import type { Message, ToolCall } from "ai";
 import { motion } from "framer-motion";
 import { Copy, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -59,11 +59,37 @@ const MarkdownContent = memo(({ content }: { content: string }) => {
 
 MarkdownContent.displayName = "MarkdownContent";
 
+// Check if a message is currently invoking tools
+const isInvokingTools = (message: Message) => {
+  // Look for tool calls in the message
+  const toolCalls = ("tools" in message ? message.tools : []) as Array<{
+    state: string;
+    toolName: string;
+  }>;
+
+  if (!toolCalls || toolCalls.length === 0) {
+    return false;
+  }
+
+  // Check if any tool is in "partial-call" or "call" state
+  return toolCalls.some(
+    (tool) => tool.state === "partial-call" || tool.state === "call"
+  );
+};
+
 // Memoized message item component
 function MessageItemComponent({ message, isLast }: MessageItemProps) {
   const isUser = message.role === "user";
   const isSystem = message.role === "system";
   const [isCopied, setIsCopied] = useState(false);
+
+  // Check if this message is currently invoking tools
+  const toolsInProgress = !isUser && !isSystem && isInvokingTools(message);
+
+  // If tools are being invoked, don't show content yet
+  if (toolsInProgress && !message.content) {
+    return null;
+  }
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content).then(() => {

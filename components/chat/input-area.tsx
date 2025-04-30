@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { SendHorizonal } from "lucide-react";
+import { SendHorizonal, ArrowUp } from "lucide-react";
 import { useState, useRef, useCallback, memo } from "react";
 
 interface InputAreaProps {
@@ -170,11 +170,11 @@ export const InputArea = memo(function InputArea({
           size="icon"
           disabled={awaitingResponse || !input.trim() || input.trim() === ""}
           className={cn(
-            "absolute right-2 bottom-2 flex items-center justify-center rounded-lg bg-blue-600 text-white transition-colors duration-200 ease-in-out hover:bg-blue-700 disabled:bg-neutral-600 disabled:opacity-70",
-            "h-8 w-8"
+            "absolute right-2 bottom-3 flex items-center justify-center rounded-full bg-white text-black transition-all duration-200 ease-in-out hover:scale-110 disabled:bg-neutral-600 disabled:opacity-50 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 active:bg-white active:text-neutral-900 active:transition-all active:duration-100",
+            "h-10 w-10 cursor-pointer"
           )}
         >
-          <SendHorizonal className="size-4" />
+          <ArrowUp className="size-5 stroke-[2]" />
         </Button>
       </div>
     </form>

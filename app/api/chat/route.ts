@@ -26,126 +26,183 @@ function errorHandler(error: unknown) {
   return JSON.stringify(error);
 }
 
+// Function to implement exponential backoff for retries
+async function withRetry<T>(
+  fn: () => T | Promise<T>,
+  maxRetries = 5,
+  initialDelay = 1000,
+  factor = 2
+): Promise<T> {
+  let retries = 0;
+  let delay = initialDelay;
+
+  while (true) {
+    try {
+      return await Promise.resolve(fn());
+    } catch (error: unknown) {
+      retries++;
+
+      // If we've exceeded max retries or it's not an overload error, rethrow
+      if (retries >= maxRetries ||
+        !(typeof error === 'object' && error !== null && 'toString' in error &&
+          error.toString().toLowerCase().includes('overloaded'))) {
+        throw error;
+      }
+
+      // Wait with exponential backoff
+      console.log(`Model overloaded, retrying in ${delay}ms (attempt ${retries}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      // Increase delay for next retry
+      delay *= factor;
+    }
+  }
+}
+
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const result = streamText({
-    model: google("gemini-2.0-flash"),
-    messages: convertToCoreMessages(messages),
-    maxTokens: 4096,
-    system: `Anda adalah asisten psikologi yang sangat informatif dan membantu.
-    Berikan jawaban yang komprehensif, detail, dan mendalam untuk setiap pertanyaan.
-    Gunakan alat pada setiap permintaan untuk mendapatkan informasi yang relevan.
-    Pastikan untuk mendapatkan informasi dari basis pengetahuan sebelum menjawab pertanyaan.
-    Jika respons memerlukan beberapa alat, panggil satu alat setelah yang lain tanpa merespons pengguna.
-    
-    PENTING: HANYA jawab pertanyaan menggunakan informasi dari panggilan alat.
-    Jika tidak ada informasi yang relevan ditemukan dalam panggilan alat, jawab, "Maaf, saya tidak tahu."
-    
-    Jawab pertanyaan menggunakan HANYA:
-    1. Informasi dari panggilan alat
-    
-    Bahkan ketika memberikan jawaban yang komprehensif dan detail, SELALU pastikan jawaban tersebut berdasarkan informasi yang diperoleh dari panggilan alat.
-    
-    Buat jawaban Anda selalu bermanfaat dan informatif berdasarkan informasi dari alat. Jika topik membutuhkan penjelasan detail, berikan sebanyak mungkin informasi yang berguna dari hasil panggilan alat.
-    
-    Gunakan kemampuan Anda sebagai mesin penalaran HANYA untuk menyusun informasi dari panggilan alat menjadi jawaban yang koheren.
-    Fokus pada memberikan saran dan informasi terkait psikologi yang relevan, akurat, bermanfaat, dan komprehensif HANYA berdasarkan hasil panggilan alat.
-    
-    PANDUAN UNTUK FORMAT MARKDOWN:
-    1. Gunakan format markdown untuk meningkatkan keterbacaan respons Anda.
-    2. Gunakan heading (## dan ###) untuk membagi respon menjadi bagian-bagian yang logis.
-    3. Gunakan daftar bernomor (1. 2. 3.) untuk langkah-langkah atau poin-poin dengan urutan tertentu.
-    4. Gunakan daftar bullet (- atau *) untuk poin-poin yang tidak perlu berurutan.
-    5. Gunakan **teks tebal** untuk menekankan poin penting atau istilah kunci.
-    6. Gunakan *teks miring* untuk definisi atau kutipan.
-    7. Gunakan \`kode\` untuk menandai istilah teknis jika perlu.
-    8. Gunakan blok kode untuk contoh tertentu jika perlu dengan format:
-       \`\`\`
-       contoh blok kode
-       \`\`\`
-    9. Gunakan > untuk blockquote saat ingin menekankan kutipan penting.
-    10. Gunakan tabel untuk data yang kompleks jika diperlukan.
-    
-    ATURAN PENTING TENTANG SUMBER:
-    1. JANGAN pernah menyebutkan sumber dalam badan utama respons.
-    2. Berikan respons Anda terlebih dahulu secara lengkap tanpa menyebutkan sumber apapun.
-    3. Setelah respons utama, tambahkan DUA baris kosong.
-    4. Baru kemudian tambahkan bagian sumber dengan format berikut:
-    
-    Sumber:
-    - [Judul1](URL1)
-    - [Judul2](URL2)
-    
-    5. Jika sumber tidak memiliki URL, gunakan format: Judul1
-    6. Jika tidak ada sumber yang digunakan dalam respons, JANGAN tambahkan bagian Sumber.`,
-    tools: {
-      getInformation: tool({
-        description: `get information from your knowledge base to answer questions.`,
-        parameters: z.object({
-          question: z.string().describe("the users question"),
-          similarQuestions: z.array(z.string()).describe("keywords to search"),
+  // Wrap streamText in retry logic
+  const streamTextWithRetry = () =>
+    streamText({
+      model: google("gemini-2.0-flash"),
+      messages: convertToCoreMessages(messages),
+      maxTokens: 4096,
+      toolCallStreaming: true,
+      system: `Anda adalah asisten psikologi yang sangat informatif dan membantu.
+      Berikan jawaban yang komprehensif, detail, dan mendalam untuk setiap pertanyaan.
+      Gunakan alat pada setiap permintaan untuk mendapatkan informasi yang relevan.
+      Pastikan untuk mendapatkan informasi dari basis pengetahuan sebelum menjawab pertanyaan.
+      Jika respons memerlukan beberapa alat, panggil satu alat setelah yang lain tanpa merespons pengguna.
+      
+      PENTING: HANYA jawab pertanyaan menggunakan informasi dari panggilan alat.
+      Jika tidak ada informasi yang relevan ditemukan dalam panggilan alat, jawab, "Maaf, saya tidak tahu."
+      
+      Jawab pertanyaan menggunakan HANYA:
+      1. Informasi dari panggilan alat
+      
+      Bahkan ketika memberikan jawaban yang komprehensif dan detail, SELALU pastikan jawaban tersebut berdasarkan informasi yang diperoleh dari panggilan alat.
+      
+      Buat jawaban Anda selalu bermanfaat dan informatif berdasarkan informasi dari alat. Jika topik membutuhkan penjelasan detail, berikan sebanyak mungkin informasi yang berguna dari hasil panggilan alat.
+      
+      Gunakan kemampuan Anda sebagai mesin penalaran HANYA untuk menyusun informasi dari panggilan alat menjadi jawaban yang koheren.
+      Fokus pada memberikan saran dan informasi terkait psikologi yang relevan, akurat, bermanfaat, dan komprehensif HANYA berdasarkan hasil panggilan alat.
+      
+      PANDUAN UNTUK FORMAT MARKDOWN:
+      1. Gunakan format markdown untuk meningkatkan keterbacaan respons Anda.
+      2. Gunakan heading (## dan ###) untuk membagi respon menjadi bagian-bagian yang logis.
+      3. Gunakan daftar bernomor (1. 2. 3.) untuk langkah-langkah atau poin-poin dengan urutan tertentu.
+      4. Gunakan daftar bullet (- atau *) untuk poin-poin yang tidak perlu berurutan.
+      5. Gunakan **teks tebal** untuk menekankan poin penting atau istilah kunci.
+      6. Gunakan *teks miring* untuk definisi atau kutipan.
+      7. Gunakan \`kode\` untuk menandai istilah teknis jika perlu.
+      8. Gunakan blok kode untuk contoh tertentu jika perlu dengan format:
+         \`\`\`
+         contoh blok kode
+         \`\`\`
+      9. Gunakan > untuk blockquote saat ingin menekankan kutipan penting.
+      10. Gunakan tabel untuk data yang kompleks jika diperlukan.
+      
+      ATURAN PENTING TENTANG SUMBER:
+      1. JANGAN pernah menyebutkan sumber dalam badan utama respons.
+      2. Berikan respons Anda terlebih dahulu secara lengkap tanpa menyebutkan sumber apapun.
+      3. Setelah respons utama, tambahkan DUA baris kosong.
+      4. Baru kemudian tambahkan bagian sumber dengan format berikut:
+      
+      Sumber:
+      - [Judul1](URL1)
+      - [Judul2](URL2)
+      
+      5. Jika sumber tidak memiliki URL, gunakan format: Judul1
+      6. Jika tidak ada sumber yang digunakan dalam respons, JANGAN tambahkan bagian Sumber.`,
+      tools: {
+        getInformation: tool({
+          description: `get information from your knowledge base to answer questions.`,
+          parameters: z.object({
+            question: z.string().describe("the users question"),
+            similarQuestions: z.array(z.string()).describe("keywords to search"),
+          }),
+          execute: async ({ similarQuestions }) => {
+            // Increase number of results by expanding search
+            const results = await Promise.all(
+              similarQuestions.map(
+                async (question) => await findRelevantContent(question),
+              ),
+            );
+            // Flatten the array of arrays and remove duplicates based on 'name'
+            const uniqueResults = Array.from(
+              new Map(results.flat().map((item) => [item?.name, item])).values(),
+            );
+
+            // Format results to include metadata
+            return uniqueResults.map(result => {
+              // Safely cast metadata to EmbeddingMetadata type or empty object
+              const metadata = (result.metadata as EmbeddingMetadata) || {};
+
+              const formattedResult = {
+                content: result.name,
+                similarity: result.similarity,
+                title: metadata.title || "Untitled Source",
+                url: metadata.url || null,
+                source: metadata.source || null
+              };
+              return formattedResult;
+            });
+          },
         }),
-        execute: async ({ similarQuestions }) => {
-          // Increase number of results by expanding search
-          const results = await Promise.all(
-            similarQuestions.map(
-              async (question) => await findRelevantContent(question),
-            ),
-          );
-          // Flatten the array of arrays and remove duplicates based on 'name'
-          const uniqueResults = Array.from(
-            new Map(results.flat().map((item) => [item?.name, item])).values(),
-          );
-
-          // Format results to include metadata
-          return uniqueResults.map(result => {
-            // Safely cast metadata to EmbeddingMetadata type or empty object
-            const metadata = (result.metadata as EmbeddingMetadata) || {};
-
-            const formattedResult = {
-              content: result.name,
-              similarity: result.similarity,
-              title: metadata.title || "Untitled Source",
-              url: metadata.url || null,
-              source: metadata.source || null
-            };
-            return formattedResult;
-          });
-        },
-      }),
-      understandQuery: tool({
-        description: `understand the users query. use this tool on every prompt.`,
-        parameters: z.object({
-          query: z.string().describe("the users query"),
-          toolsToCallInOrder: z
-            .array(z.string())
-            .describe(
-              "these are the tools you need to call in the order necessary to respond to the users query",
-            ),
+        understandQuery: tool({
+          description: `understand the users query. use this tool on every prompt.`,
+          parameters: z.object({
+            query: z.string().describe("the users query"),
+            toolsToCallInOrder: z
+              .array(z.string())
+              .describe(
+                "these are the tools you need to call in the order necessary to respond to the users query",
+              ),
+          }),
+          execute: async ({ query }) => {
+            // Wrap this nested call in retry logic as well
+            return await withRetry(async () => {
+              const { object } = await generateObject({
+                model: google("gemini-2.0-flash"),
+                system:
+                  "You are a comprehensive query understanding assistant for psychology topics. Thoroughly analyze the user query and generate detailed similar questions to explore all aspects of their inquiry.",
+                schema: z.object({
+                  questions: z
+                    .array(z.string())
+                    .max(5) // Increased from 3 to 5 for more comprehensive search
+                    .describe("similar questions to the user's query that cover different aspects of their question"),
+                }),
+                prompt: `Analyze this query about psychology: "${query}". Provide the following:
+                        5 similar questions that could help comprehensively answer the user's query. Ensure the questions explore different aspects and angles of the topic to provide a thorough answer. Remember that we will display citations only at the end of the response, never in the main text.`,
+              });
+              return object.questions;
+            });
+          },
         }),
-        execute: async ({ query }) => {
-          const { object } = await generateObject({
-            model: google("gemini-2.0-flash"),
-            system:
-              "You are a comprehensive query understanding assistant for psychology topics. Thoroughly analyze the user query and generate detailed similar questions to explore all aspects of their inquiry.",
-            schema: z.object({
-              questions: z
-                .array(z.string())
-                .max(5) // Increased from 3 to 5 for more comprehensive search
-                .describe("similar questions to the user's query that cover different aspects of their question"),
-            }),
-            prompt: `Analyze this query about psychology: "${query}". Provide the following:
-                    5 similar questions that could help comprehensively answer the user's query. Ensure the questions explore different aspects and angles of the topic to provide a thorough answer. Remember that we will display citations only at the end of the response, never in the main text.`,
-          });
-          return object.questions;
-        },
-      }),
-    },
-  });
+      },
+    });
 
-  // Return data stream response with error handling
-  return result.toDataStreamResponse({
-    getErrorMessage: errorHandler,
-  });
+  try {
+    // Use retry logic for the main streamText call
+    const result = await withRetry(streamTextWithRetry);
+
+    // Return data stream response with error handling
+    return result.toDataStreamResponse({
+      getErrorMessage: errorHandler,
+    });
+  } catch (error) {
+    console.error("Failed after all retries:", error);
+
+    // Return a more user-friendly error
+    return new Response(
+      JSON.stringify({
+        error: "The AI service is currently experiencing high traffic. Please try again in a few minutes."
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
 }
