@@ -33,8 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { InfoBoxes } from "@/components/info-boxes";
 import { v4 as uuidv4 } from "uuid";
-import { BlurFade } from "@/components/ui/blur-fade";
-import { AuroraBackground } from "@/components/ui/aurora-background";
+import { Spotlight } from "@/components/ui/spotlight";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -112,9 +111,13 @@ function InitialLayout({
   awaitingResponse,
 }: InitialLayoutProps) {
   return (
-    <AuroraBackground>
+    <div className="min-h-screen bg-neutral-900">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
-      <BlurFade
+      <Spotlight
+        className="fixed top-[-10%] md:top-[-30%] left-0 right-0 mx-auto w-[150%] md:w-full max-w-7xl z-0"
+        fill="white"
+      />
+      <motion.div
         key="initial-layout"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -172,8 +175,8 @@ function InitialLayout({
             AI Chat Psikologi yang Aman & Anonim.
           </p>
         </div>
-      </BlurFade>
-    </AuroraBackground>
+      </motion.div>
+    </div>
   );
 }
 
@@ -216,7 +219,7 @@ function ActiveChatLayout({
   }, [allMessages]);
 
   return (
-    <BlurFade
+    <motion.div
       key="active-chat-layout"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -366,7 +369,7 @@ function ActiveChatLayout({
           </div>
         </section>
       </section>
-    </BlurFade>
+    </motion.div>
   );
 }
 
@@ -389,7 +392,7 @@ function MessageItem({ message, isLast }: MessageItemProps) {
   const sourcesContent = hasSources ? parts[1].trim() : "";
 
   return (
-    <BlurFade
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -5 }}
@@ -494,7 +497,7 @@ function MessageItem({ message, isLast }: MessageItemProps) {
           </p>
         </div>
       )}
-    </BlurFade>
+    </motion.div>
   );
 }
 
@@ -504,7 +507,7 @@ interface LoadingProps {
 
 function Loading({ tool }: LoadingProps) {
   return (
-    <BlurFade
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
@@ -531,7 +534,7 @@ function Loading({ tool }: LoadingProps) {
           {tool ? `Memproses (${tool})...` : "Berpikir..."}
         </span>
       </div>
-    </BlurFade>
+    </motion.div>
   );
 }
 
