@@ -40,6 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Loading } from "@/components/chat";
 
 interface ChatMessage {
   role: string;
@@ -291,11 +292,8 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
 
           <div className="flex-grow overflow-y-auto px-3 pb-3 pt-0 custom-scrollbar">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <Loader2 className="size-8 text-neutral-500 animate-spin mb-3" />
-                <p className="text-sm text-neutral-400">
-                  Memuat daftar chat...
-                </p>
+              <div className="py-4">
+                <Loading tool="getInformation" />
               </div>
             ) : (
               <>

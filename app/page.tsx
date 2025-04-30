@@ -296,26 +296,6 @@ function ActiveChatLayout({
       </aside>
 
       <section className="relative flex w-full flex-col">
-        <header className="lg:hidden sticky top-0 z-20 flex items-center justify-between p-3 backdrop-blur-md bg-neutral-900/80 border-b border-neutral-800">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/waraslogo.png"
-              alt="Waras AI Logo"
-              className="size-6"
-              width={24}
-              height={24}
-            />
-            <h1 className="text-base font-semibold">Waras AI</h1>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full text-neutral-300 hover:bg-neutral-700 hover:text-white"
-          >
-            <User className="size-3" />
-          </Button>
-        </header>
-
         <div className="flex flex-1 flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
           <div className="flex-grow"></div>
           <section className="flex w-full flex-col px-4 md:px-6 pb-4 pt-6">

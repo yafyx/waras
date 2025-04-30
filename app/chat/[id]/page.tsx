@@ -5,7 +5,7 @@ import { useChat } from "ai/react";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect, useMemo, useTransition } from "react";
 import { useParams, usePathname } from "next/navigation";
-import { ChatHeader, ChatBody, InputArea } from "@/components/chat";
+import { ChatBody, InputArea } from "@/components/chat";
 import dynamic from "next/dynamic";
 import {
   loadChatFromLocalStorage,
@@ -265,8 +265,6 @@ export default function ChatPage({}: ChatPageProps) {
       transition={{ duration: 0.15, type: "tween" }}
       className="flex flex-col h-screen"
     >
-      <ChatHeader />
-
       <div className="flex-1 flex flex-col relative overflow-hidden">
         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end">
           <ChatBody
