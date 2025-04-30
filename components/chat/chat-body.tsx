@@ -188,16 +188,49 @@ export const ChatBody = memo(function ChatBody({
     }
   };
 
-  // Only scroll for new messages, not on initial load
+  // Track if this is the initial mount
+  const isInitialMount = useRef(true);
+  // Track if we have attached a ResizeObserver
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
   useEffect(() => {
     if (allMessages.length > 0) {
-      // Only smooth scroll for new messages, not initial load
-      const isNewMessage = allMessages.length > 0;
-      if (isNewMessage) {
-        scrollToBottom(false); // Use smooth scrolling for new messages
+      if (isInitialMount.current) {
+        // Use requestAnimationFrame to wait for DOM paint
+        requestAnimationFrame(() => {
+          scrollToBottom(true);
+          isInitialMount.current = false;
+        });
+      } else {
+        scrollToBottom(false);
       }
     }
   }, [allMessages.length]);
+
+  // Use ResizeObserver to handle images or dynamic content
+  useEffect(() => {
+    if (!messagesEndRef.current) return;
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+    }
+    // Only observe after initial mount
+    if (!isInitialMount.current) {
+      resizeObserverRef.current = new window.ResizeObserver(() => {
+        scrollToBottom(true);
+      });
+      // Observe the parent node of the messagesEndRef (the chat container)
+      if (messagesEndRef.current.parentNode) {
+        resizeObserverRef.current.observe(
+          messagesEndRef.current.parentNode as Element
+        );
+      }
+    }
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+    };
+  }, [allMessages.length, messagesEndRef]);
 
   return (
     <div className="flex flex-col h-full">

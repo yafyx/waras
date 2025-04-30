@@ -177,10 +177,6 @@ export const InputArea = memo(function InputArea({
           <SendHorizonal className="size-4" />
         </Button>
       </div>
-      <p className="text-sm text-center text-neutral-500/50 mt-2 px-2">
-        Waras AI dapat membuat kesalahan. Pertimbangkan untuk memeriksa
-        informasi penting.
-      </p>
     </form>
   );
 });
