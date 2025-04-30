@@ -713,7 +713,7 @@ function InputArea({
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Tanyakan masalah psikologis Anda..."
+          placeholder="Tanyakan masalah psikologi Anda..."
           rows={1}
           disabled={awaitingResponse}
           style={{

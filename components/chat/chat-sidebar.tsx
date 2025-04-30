@@ -16,6 +16,10 @@ import {
   Settings,
   Trash2,
   Grid,
+  X,
+  Loader2,
+  Grid2X2Plus,
+  Grid2X2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,6 +32,14 @@ import {
   ChatInfo,
 } from "@/lib/chat-storage";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ChatMessage {
   role: string;
@@ -47,8 +59,11 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [localChatList, setLocalChatList] = useState<ChatInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Load chats on mount and when storage changes
   useEffect(() => {
@@ -88,6 +103,27 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
     };
   }, []);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + K to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+
+      // Ctrl/Cmd + N for new chat
+      if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+        e.preventDefault();
+        handleNewChat();
+        router.push("/chat");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
+
   // Determine which list to use - either the prop or our local state
   const effectiveChatList = chatList.length > 0 ? chatList : localChatList;
 
@@ -107,262 +143,370 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (confirm("Apakah Anda yakin ingin menghapus obrolan ini?")) {
-      const success = deleteChatFromLocalStorage(chatId);
+    setChatToDelete(chatId);
+    setIsDeleteDialogOpen(true);
+  };
 
-      if (success) {
-        if (currentChatId === chatId) {
-          // If we're on the chat that was deleted, redirect to new chat
-          router.push("/chat");
-        }
-        toast("Obrolan berhasil dihapus");
-      } else {
-        toast("Gagal menghapus obrolan");
+  // Handle actual deletion after confirmation
+  const confirmDelete = () => {
+    if (!chatToDelete) return;
+
+    const success = deleteChatFromLocalStorage(chatToDelete);
+
+    if (success) {
+      if (currentChatId === chatToDelete) {
+        // If we're on the chat that was deleted, redirect to new chat
+        router.push("/chat");
       }
+      toast("Obrolan berhasil dihapus", {
+        description: "Chat telah dihapus dari perangkat Anda",
+        icon: <Trash2 className="size-4 text-red-400" />,
+      });
+    } else {
+      toast("Gagal menghapus obrolan", {
+        description: "Terjadi kesalahan saat menghapus chat",
+        icon: <X className="size-4 text-red-400" />,
+      });
     }
+
+    // Reset state
+    setChatToDelete(null);
+    setIsDeleteDialogOpen(false);
+  };
+
+  // Handle cancel deletion
+  const cancelDelete = () => {
+    setChatToDelete(null);
+    setIsDeleteDialogOpen(false);
   };
 
   return (
-    <nav
-      className="hidden w-[300px] flex-shrink-0 p-4 lg:block"
-      ref={sidebarRef}
-    >
-      <section className="flex h-full flex-col rounded-2xl border border-neutral-800 bg-neutral-900 shadow-lg">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="flex h-fit w-full items-center justify-between rounded-t-2xl border-b border-neutral-800 p-4 hover:bg-neutral-800 transition-colors"
-              type="button"
+    <>
+      <nav
+        className="hidden w-[300px] flex-shrink-0 p-4 lg:block"
+        ref={sidebarRef}
+        aria-label="Chat sidebar"
+      >
+        <section className="flex h-full flex-col rounded-2xl border border-neutral-800 bg-neutral-900 shadow-lg">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex h-fit w-full items-center justify-between rounded-t-2xl border-b border-neutral-800 bg-gradient-to-r from-neutral-900 to-neutral-950 p-4 hover:bg-neutral-800/50 transition-all duration-300 cursor-pointer"
+                aria-label="Menu aplikasi Waras AI"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center size-7 bg-gradient-to-br rounded-full shadow-sm">
+                    <Image
+                      src="/waras.png"
+                      alt="Waras AI Logo"
+                      width={24}
+                      height={24}
+                      className="select-none"
+                      draggable="false"
+                    />
+                  </div>
+                  <span className="font-medium">Waras AI</span>
+                </div>
+                <ChevronDown className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              sideOffset={0}
+              className="w-[266px] bg-[#121212] text-white border border-neutral-800 rounded-b-2xl rounded-t-none p-1.5"
+              style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
             >
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/waras.png"
-                  alt="Waras AI Logo"
-                  width={28}
-                  height={28}
-                  className="select-none"
-                  draggable="false"
-                />
-              </div>
-              <ChevronDown className="size-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            sideOffset={0}
-            className="w-[266px] bg-[#121212] text-white border-b border-neutral-800 rounded-b-2xl rounded-t-none p-1"
-            style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
-          >
-            <Link href="/" passHref>
               <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
                 <Image
                   src="/waras.png"
                   alt="Waras AI Logo"
-                  width={18}
-                  height={18}
-                  className="select-none"
+                  width={20}
+                  height={20}
+                  className="select-none mr-2"
                   draggable="false"
                 />
-                Beranda
+                <Link href="/">Beranda</Link>
               </DropdownMenuItem>
-            </Link>
-            <Link href="/chat" passHref>
-              <DropdownMenuItem
-                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
-                onClick={handleNewChat}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="mr-2 size-4"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M9 0C9.5523 0 10 0.44772 10 1V8H17C17.5523 8 18 8.4477 18 9C18 9.5523 17.5523 10 17 10H10V17C10 17.5523 9.5523 18 9 18C8.4477 18 8 17.5523 8 17V10H1C0.44772 10 0 9.5523 0 9C0 8.4477 0.44772 8 1 8H8V1C8 0.44772 8.4477 0 9 0Z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
-                Chat Baru
+              <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
+                <Plus className="size-6 mr-2" />
+                <Link href="/chat" onClick={handleNewChat}>
+                  Chat Baru
+                </Link>
               </DropdownMenuItem>
-            </Link>
-            <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5.7587 3.00809e-07C4.95373 -9.69919e-06 4.28937 -1.97701e-05 3.74817 0.0441902C3.18608 0.0901202 2.66937 0.18868 2.18404 0.43597C1.43139 0.81947 0.81947 1.43139 0.43597 2.18404C0.18868 2.66937 0.0901202 3.18608 0.0441902 3.74817C-1.97701e-05 4.28937 -9.69919e-06 4.95373 3.00809e-07 5.7587V7C3.00809e-07 7.5523 0.44772 8 1 8H7C7.5523 8 8 7.5523 8 7V1C8 0.44772 7.5523 3.00809e-07 7 3.00809e-07H5.7587Z"
-                  fill="currentColor"
-                ></path>
-                <path
-                  d="M15.816 0.43597C15.3306 0.18868 14.8139 0.0901202 14.2518 0.0441902C13.7106 -1.97701e-05 13.0463 -9.69919e-06 12.2413 3.00809e-07H11C10.4477 3.00809e-07 10 0.44772 10 1V7C10 7.5523 10.4477 8 11 8H17C17.5523 8 18 7.5523 18 7V5.75868C18 4.95372 18 4.28936 17.9558 3.74817C17.9099 3.18608 17.8113 2.66937 17.564 2.18404C17.1805 1.43139 16.5686 0.81947 15.816 0.43597Z"
-                  fill="currentColor"
-                ></path>
-                <path
-                  d="M1 10C0.44772 10 3.00809e-07 10.4477 3.00809e-07 11V12.2413C-9.69919e-06 13.0463 -1.97701e-05 13.7106 0.0441902 14.2518C0.0901202 14.8139 0.18868 15.3306 0.43597 15.816C0.81947 16.5686 1.43139 17.1805 2.18404 17.564C2.66937 17.8113 3.18608 17.9099 3.74817 17.9558C4.28936 18 4.95372 18 5.75868 18H7C7.5523 18 8 17.5523 8 17V11C8 10.4477 7.5523 10 7 10H1Z"
-                  fill="currentColor"
-                ></path>
-                <path
-                  d="M11 10C10.4477 10 10 10.4477 10 11V17C10 17.5523 10.4477 18 11 18H12.2413C13.0463 18 13.7106 18 14.2518 17.9558C14.8139 17.9099 15.3306 17.8113 15.816 17.564C16.5686 17.1805 17.1805 16.5686 17.564 15.816C17.8113 15.3306 17.9099 14.8139 17.9558 14.2518C18 13.7106 18 13.0463 18 12.2413V11C18 10.4477 17.5523 10 17 10H11Z"
-                  fill="currentColor"
-                ></path>
-              </svg>
-              Grid
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
+                <Grid2X2 className="size-6 mr-2" />
+                Grid
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        <div className="p-3">
-          <Link href="/chat" className="block w-full">
+          <div className="p-3">
             <Button
-              className="w-full justify-start gap-2 bg-white text-black hover:bg-neutral-100 transition-colors duration-300 ease-in-out hover:opacity-85"
+              asChild
+              className="w-full justify-start gap-2 bg-white text-black hover:bg-neutral-100 transition-colors duration-300 ease-in-out hover:opacity-85 cursor-pointer"
               onClick={handleNewChat}
+              aria-label="Buat chat baru"
             >
-              <Plus className="size-4" />
-              <span>Chat Baru</span>
+              <Link href="/chat">
+                <Plus className="size-4" />
+                <span>Chat Baru</span>
+                <kbd className="ml-auto hidden text-xs rounded border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-neutral-600 sm:inline-block">
+                  Ctrl+N
+                </kbd>
+              </Link>
             </Button>
-          </Link>
 
-          <div className="relative mt-3 mb-2">
-            <Search className="absolute left-2.5 top-2.5 size-4 text-neutral-500" />
-            <input
-              type="text"
-              placeholder="Cari chat..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-2 pl-9 pr-3 text-sm placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-600 transition-colors duration-200"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-2.5 text-neutral-500 hover:text-white"
-                title="Hapus pencarian"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="size-4"
-                >
-                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                </svg>
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="flex-grow overflow-y-auto px-3 pb-3 pt-0 custom-scrollbar">
-          {filteredChats.length > 0 && (
-            <h5 className="px-3 text-neutral-500 text-xs font-medium uppercase tracking-wider sticky top-0 bg-neutral-900 py-1 z-10">
-              Chat Terbaru
-            </h5>
-          )}
-          <div className="mt-2 flex flex-col gap-1.5">
-            {filteredChats.length > 0 ? (
-              filteredChats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className="relative group"
-                  onMouseEnter={() => setHoveredChatId(chat.id)}
-                  onMouseLeave={() => setHoveredChatId(null)}
-                >
-                  <Link
-                    href={`/chat/${chat.id}`}
-                    className={`flex flex-col items-start rounded-xl border px-3 py-2 transition-all duration-200 hover:bg-neutral-800 hover:no-underline ${
-                      currentChatId === chat.id
-                        ? "border-neutral-700 bg-neutral-800"
-                        : "border-transparent"
-                    }`}
-                  >
-                    <p className="line-clamp-1 text-sm font-medium group-hover:text-white transition-colors duration-200">
-                      {chat.firstMessage}
-                    </p>
-                    <p className="text-xs text-neutral-500">
-                      {timeAgo(chat.timestamp)}
-                    </p>
-                  </Link>
-                  {(hoveredChatId === chat.id || currentChatId === chat.id) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 hover:bg-neutral-700 hover:text-red-400 transition-all duration-200"
-                      title="Hapus Chat"
-                      onClick={(e) => handleDeleteChat(e, chat.id)}
-                    >
-                      <Trash2 className="size-3" />
-                    </Button>
-                  )}
-                </div>
-              ))
-            ) : searchQuery ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <Search className="size-10 text-neutral-600 mb-2" />
-                <p className="text-sm text-neutral-500">
-                  Tidak ada Chat yang cocok dengan &quot;{searchQuery}&quot;
-                </p>
-                <button
+            <div className="relative mt-3 mb-2">
+              <div className="absolute left-2.5 top-2.5 text-neutral-500">
+                <Search className="size-4" />
+              </div>
+              <input
+                type="text"
+                placeholder="Cari chat..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                ref={searchInputRef}
+                className="w-full rounded-lg border border-neutral-700 bg-neutral-800/70 py-2 pl-9 pr-9 text-sm placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-600/50 transition-all duration-200"
+                aria-label="Cari dalam daftar chat"
+              />
+              {searchQuery ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setSearchQuery("")}
-                  className="mt-2 text-xs text-emerald-500 hover:text-emerald-400"
+                  className="absolute right-2.5 top-2.5 p-0 h-auto w-auto text-neutral-500 hover:text-white hover:bg-transparent cursor-pointer"
+                  title="Hapus pencarian"
+                  aria-label="Hapus pencarian"
                 >
-                  Hapus pencarian
-                </button>
+                  <X className="size-4" />
+                </Button>
+              ) : (
+                <div className="absolute right-2.5 top-2.5 text-neutral-600 text-xs bg-neutral-700/50 px-1.5 py-0.5 rounded-md">
+                  Ctrl+K
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-grow overflow-y-auto px-3 pb-3 pt-0 custom-scrollbar">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <Loader2 className="size-8 text-neutral-500 animate-spin mb-3" />
+                <p className="text-sm text-neutral-400">
+                  Memuat daftar chat...
+                </p>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="flex items-center justify-center size-14 rounded-full bg-neutral-800 mb-3">
-                  <Lock className="size-6 text-neutral-500" />
+              <>
+                {filteredChats.length > 0 && (
+                  <div className="flex items-center justify-between sticky top-0 bg-neutral-900 py-2 z-10">
+                    <h5 className="px-1 text-neutral-400 text-sm font-medium tracking-tight">
+                      Chat Terbaru
+                    </h5>
+                    {filteredChats.length > 0 && (
+                      <span className="text-xs text-neutral-500 px-1 bg-neutral-800 rounded-full">
+                        {filteredChats.length}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="mt-1 flex flex-col gap-1.5">
+                  {filteredChats.length > 0 ? (
+                    filteredChats.map((chat) => (
+                      <div
+                        key={chat.id}
+                        className="relative group"
+                        onMouseEnter={() => setHoveredChatId(chat.id)}
+                        onMouseLeave={() => setHoveredChatId(null)}
+                      >
+                        <Link
+                          href={`/chat/${chat.id}`}
+                          className={`flex flex-col items-start rounded-xl border px-3 py-2.5 transition-all duration-200 hover:bg-neutral-800/70 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 ${
+                            currentChatId === chat.id
+                              ? "border-neutral-700 bg-neutral-800 shadow-sm"
+                              : "border-transparent"
+                          }`}
+                          aria-current={
+                            currentChatId === chat.id ? "page" : undefined
+                          }
+                        >
+                          <div className="w-full flex justify-between items-start">
+                            <p className="line-clamp-1 text-sm font-medium group-hover:text-white transition-colors duration-200 pr-5 max-w-[200px]">
+                              {chat.firstMessage}
+                            </p>
+                          </div>
+                          <div className="w-full flex justify-between items-center mt-1">
+                            <p className="text-xs text-neutral-500 flex items-center">
+                              {timeAgo(chat.timestamp)}
+                            </p>
+                            <div className="flex items-center gap-1 absolute right-3 top-1/2 -translate-y-1/2">
+                              {(hoveredChatId === chat.id ||
+                                currentChatId === chat.id) && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 rounded-full hover:bg-neutral-700 hover:text-red-400 transition-all duration-200 cursor-pointer"
+                                  title="Hapus Chat"
+                                  onClick={(e) => handleDeleteChat(e, chat.id)}
+                                  aria-label="Hapus chat ini"
+                                  tabIndex={0}
+                                >
+                                  <Trash2 className="size-3" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
+                    ))
+                  ) : searchQuery ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in-50 duration-300">
+                      <Search
+                        className="size-8 text-neutral-600 mb-3"
+                        strokeWidth={1.5}
+                      />
+                      <p className="text-sm text-neutral-400 font-medium">
+                        Tidak ditemukan
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-1 mb-3">
+                        Tidak ada Chat yang cocok dengan &quot;{searchQuery}
+                        &quot;
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSearchQuery("")}
+                        className="text-xs text-neutral-300 bg-neutral-800 hover:bg-neutral-700 cursor-pointer"
+                      >
+                        Hapus pencarian
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in-50 duration-300">
+                      <div className="flex items-center justify-center size-14 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 mb-3 shadow-inner">
+                        <Lock
+                          className="size-6 text-neutral-400"
+                          strokeWidth={1.5}
+                        />
+                      </div>
+                      <p className="text-sm font-medium mb-1 text-neutral-300">
+                        Belum ada riwayat Chat
+                      </p>
+                      <p className="text-xs text-neutral-500 max-w-[220px] mb-4">
+                        Mulai Chat baru untuk percakapan pribadi dengan Waras AI
+                      </p>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 text-xs bg-transparent border-neutral-700 hover:bg-neutral-800 text-neutral-300 cursor-pointer"
+                      >
+                        <Link href="/chat" onClick={handleNewChat}>
+                          <Plus className="size-3" />
+                          Mulai Chat Baru
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm font-medium mb-1">
-                  Belum ada riwayat Chat
-                </p>
-                <p className="text-xs text-neutral-500 max-w-[200px]">
-                  Mulai Chat baru untuk percakapan pribadi dengan Waras AI
-                </p>
-              </div>
+              </>
             )}
           </div>
-        </div>
 
-        <div className="shrink-0 p-4 pt-2">
-          <div className="relative flex h-[120px] w-full flex-col justify-between overflow-hidden rounded-xl border border-neutral-800 bg-gradient-to-br from-neutral-900 to-neutral-950 p-5 transition-all duration-200 hover:border-neutral-700">
-            <div className="flex items-center gap-2">
-              <Lock className="size-4 text-emerald-400" />
-              <span className="text-xs font-medium text-emerald-400">Aman</span>
-            </div>
-            <div>
-              <p className="relative mt-2 text-sm font-medium">
-                Privat, Permissionless, Aman.
-              </p>
-              <p className="text-xs font-medium text-neutral-500 mt-1">
-                Waras AI
-              </p>
+          <div className="shrink-0 p-4 pt-2">
+            <div className="relative flex h-auto w-full flex-col justify-between overflow-hidden rounded-xl border border-neutral-800 bg-gradient-to-br from-neutral-900 to-neutral-800 p-4 transition-all duration-300 hover:border-neutral-700 hover:shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center size-6 rounded-full bg-neutral-800/80">
+                    <Lock className="size-3 text-neutral-300" />
+                  </div>
+                  <span className="text-xs font-medium text-neutral-300">
+                    Enkripsi Lokal
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="relative text-sm font-medium text-white/90">
+                  Privat, Permissionless, Aman.
+                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-neutral-400">Waras AI v1.0</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(115, 115, 115, 0.5);
-          border-radius: 20px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(140, 140, 140, 0.7);
-        }
-      `}</style>
-    </nav>
+        <style jsx global>{`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(115, 115, 115, 0.3);
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(140, 140, 140, 0.5);
+          }
+          .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(115, 115, 115, 0.3) transparent;
+          }
+
+          /* Animation utilities */
+          .animate-in {
+            animation-duration: 150ms;
+            animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity;
+          }
+          .fade-in-50 {
+            animation-name: fadeIn;
+            opacity: 0;
+            animation-fill-mode: forwards;
+          }
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+        `}</style>
+      </nav>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="bg-neutral-900 border border-neutral-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Hapus Chat</DialogTitle>
+            <DialogDescription className="text-neutral-400">
+              Apakah Anda yakin ingin menghapus obrolan ini? Tindakan ini tidak
+              dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="bg-transparent text-white border-neutral-700 hover:bg-neutral-800 hover:text-white cursor-pointer"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              variant="destructive"
+              className="bg-red-500 hover:bg-red-600 text-white focus:ring-red-500 cursor-pointer"
+            >
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
