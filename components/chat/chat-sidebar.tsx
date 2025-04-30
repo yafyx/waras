@@ -59,7 +59,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
         setLocalChatList(chats);
       } catch (error) {
         console.error("Error loading chat list:", error);
-        toast("Failed to load chat list");
+        toast("Gagal memuat daftar obrolan");
       } finally {
         setIsLoading(false);
       }
@@ -107,7 +107,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (confirm("Are you sure you want to delete this chat?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus obrolan ini?")) {
       const success = deleteChatFromLocalStorage(chatId);
 
       if (success) {
@@ -115,9 +115,9 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
           // If we're on the chat that was deleted, redirect to new chat
           router.push("/chat");
         }
-        toast("Chat deleted successfully");
+        toast("Obrolan berhasil dihapus");
       } else {
-        toast("Failed to delete chat");
+        toast("Gagal menghapus obrolan");
       }
     }
   };
@@ -163,7 +163,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                   className="select-none"
                   draggable="false"
                 />
-                Home
+                Beranda
               </DropdownMenuItem>
             </Link>
             <Link href="/chat" passHref>
@@ -186,7 +186,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                     fill="currentColor"
                   ></path>
                 </svg>
-                New Chat
+                Chat Baru
               </DropdownMenuItem>
             </Link>
             <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
@@ -226,7 +226,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               onClick={handleNewChat}
             >
               <Plus className="size-4" />
-              <span>New Chat</span>
+              <span>Chat Baru</span>
             </Button>
           </Link>
 
@@ -234,7 +234,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
             <Search className="absolute left-2.5 top-2.5 size-4 text-neutral-500" />
             <input
               type="text"
-              placeholder="Search chats..."
+              placeholder="Cari chat..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-2 pl-9 pr-3 text-sm placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-600 transition-colors duration-200"
@@ -243,7 +243,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               <button
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2.5 top-2.5 text-neutral-500 hover:text-white"
-                title="Clear search"
+                title="Hapus pencarian"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -261,7 +261,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
         <div className="flex-grow overflow-y-auto px-3 pb-3 pt-0 custom-scrollbar">
           {filteredChats.length > 0 && (
             <h5 className="px-3 text-neutral-500 text-xs font-medium uppercase tracking-wider sticky top-0 bg-neutral-900 py-1 z-10">
-              Recent Chats
+              Chat Terbaru
             </h5>
           )}
           <div className="mt-2 flex flex-col gap-1.5">
@@ -293,7 +293,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                       variant="ghost"
                       size="icon"
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 hover:bg-neutral-700 hover:text-red-400 transition-all duration-200"
-                      title="Delete chat"
+                      title="Hapus Chat"
                       onClick={(e) => handleDeleteChat(e, chat.id)}
                     >
                       <Trash2 className="size-3" />
@@ -305,13 +305,13 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <Search className="size-10 text-neutral-600 mb-2" />
                 <p className="text-sm text-neutral-500">
-                  No chats found with &quot;{searchQuery}&quot;
+                  Tidak ada Chat yang cocok dengan &quot;{searchQuery}&quot;
                 </p>
                 <button
                   onClick={() => setSearchQuery("")}
                   className="mt-2 text-xs text-emerald-500 hover:text-emerald-400"
                 >
-                  Clear search
+                  Hapus pencarian
                 </button>
               </div>
             ) : (
@@ -319,9 +319,11 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                 <div className="flex items-center justify-center size-14 rounded-full bg-neutral-800 mb-3">
                   <Lock className="size-6 text-neutral-500" />
                 </div>
-                <p className="text-sm font-medium mb-1">No chat history yet</p>
+                <p className="text-sm font-medium mb-1">
+                  Belum ada riwayat Chat
+                </p>
                 <p className="text-xs text-neutral-500 max-w-[200px]">
-                  Start a new chat to have a private conversation with Waras AI
+                  Mulai Chat baru untuk percakapan pribadi dengan Waras AI
                 </p>
               </div>
             )}
@@ -332,13 +334,11 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
           <div className="relative flex h-[120px] w-full flex-col justify-between overflow-hidden rounded-xl border border-neutral-800 bg-gradient-to-br from-neutral-900 to-neutral-950 p-5 transition-all duration-200 hover:border-neutral-700">
             <div className="flex items-center gap-2">
               <Lock className="size-4 text-emerald-400" />
-              <span className="text-xs font-medium text-emerald-400">
-                Secure
-              </span>
+              <span className="text-xs font-medium text-emerald-400">Aman</span>
             </div>
             <div>
               <p className="relative mt-2 text-sm font-medium">
-                Private, Permissionless, Secure AI Chat.
+                Privat, Permissionless, Aman.
               </p>
               <p className="text-xs font-medium text-neutral-500 mt-1">
                 Waras AI

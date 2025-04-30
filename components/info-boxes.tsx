@@ -35,11 +35,11 @@ export function InfoBoxes() {
             Privasi Terjamin
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 mt-2 relative z-10 hidden md:block">
+        <CardContent className="p-0 relative z-10 hidden md:block">
           <CardDescription className="text-sm text-neutral-400">
-            Percakapan Anda{" "}
+            Chat Anda{" "}
             <span className="text-blue-400 font-medium">tidak pernah</span>{" "}
-            disimpan di server terpusat.
+            disimpan di server terpusat. Tanpa perlu membuat akun.
           </CardDescription>
         </CardContent>
       </Card>
@@ -78,10 +78,17 @@ export function InfoBoxes() {
             Respon Cepat
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 mt-2 relative z-10 hidden md:block">
+        <CardContent className="p-0 relative z-10 hidden md:block">
           <CardDescription className="text-sm text-neutral-400">
-            Didukung oleh model AI terkini untuk jawaban{" "}
-            <span className="text-green-400 font-medium">instan</span>.
+            Didukung model{" "}
+            <span className="text-green-400 font-medium">Gemini AI</span> dan
+            sumber informasi{" "}
+            <span className="text-green-400 font-medium">Alodokter</span> untuk
+            memberikan jawaban{" "}
+            <span className="text-green-400 font-medium">
+              akurat dalam hitungan detik
+            </span>
+            .
           </CardDescription>
         </CardContent>
       </Card>
@@ -112,7 +119,7 @@ export function InfoBoxes() {
             Fokus Psikologi
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 mt-2 relative z-10 hidden md:block">
+        <CardContent className="p-0 relative z-10 hidden md:block">
           <CardDescription className="text-sm text-neutral-400">
             Dirancang khusus untuk menjawab pertanyaan seputar{" "}
             <span className="text-purple-400 font-medium">psikologi</span>.
