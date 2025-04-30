@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Message } from "ai";
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -84,7 +84,11 @@ export default function Chat() {
     );
   }, [messages]);
 
-  const onFormSubmit = (e: SubmitEventTypes) => {
+  const onFormSubmit = (
+    e:
+      | React.FormEvent<HTMLFormElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
     e.preventDefault();
     if (input.trim().length >= 3 && !awaitingResponse) {
       const userInput = input.trim();
@@ -120,7 +124,11 @@ export default function Chat() {
 interface InitialLayoutProps {
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onFormSubmit: (e: SubmitEventTypes) => void;
+  onFormSubmit: (
+    e:
+      | React.FormEvent<HTMLFormElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>
+  ) => void;
   awaitingResponse: boolean;
 }
 
@@ -137,9 +145,9 @@ function InitialLayout({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      className="flex h-screen w-full flex-col items-center justify-center gap-3 p-4 dark:bg-neutral-950 text-white"
+      className="flex h-[100dvh] w-full flex-col items-center justify-center dark:bg-neutral-950 text-white"
     >
-      <div className="relative flex w-full max-w-3xl flex-col items-center gap-8">
+      <div className="relative flex w-full max-w-3xl flex-col items-center justify-center gap-8 px-4 md:px-6">
         {/* Logo and Title */}
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center h-[60px]">
@@ -157,7 +165,7 @@ function InitialLayout({
           </h1>
         </div>
         {/* Input Area */}
-        <div className="w-full max-w-3xl">
+        <div className="w-full">
           <InputArea
             input={input}
             handleInputChange={handleInputChange}
@@ -166,9 +174,11 @@ function InitialLayout({
           />
         </div>
         {/* Info Boxes */}
-        <InfoBoxes />
+        <div className="w-full">
+          <InfoBoxes />
+        </div>
         {/* Footer Text */}
-        <p className="flex items-center gap-2 text-sm font-medium text-neutral-600 mt-6 bg-neutral-900/50 px-4 py-3 rounded-full border border-neutral-800 backdrop-blur-sm">
+        <p className="flex items-center gap-2 text-sm font-medium text-neutral-600 mt-2 bg-neutral-900/50 px-4 py-3 rounded-full border border-neutral-800 backdrop-blur-sm">
           <svg
             width="16"
             height="20"
@@ -194,7 +204,11 @@ function InitialLayout({
 interface ActiveChatLayoutProps {
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onFormSubmit: (e: SubmitEventTypes) => void;
+  onFormSubmit: (
+    e:
+      | React.FormEvent<HTMLFormElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>
+  ) => void;
   awaitingResponse: boolean;
   allMessages: Message[];
   currentToolCall?: string;
@@ -220,6 +234,11 @@ function ActiveChatLayout({
     }
   }, [input]);
 
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [allMessages]);
+
   return (
     <motion.section
       key="active-chat-layout"
@@ -227,9 +246,9 @@ function ActiveChatLayout({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="flex h-[100svh] w-full text-white"
+      className="flex h-[100dvh] w-full text-white dark:bg-neutral-950"
     >
-      <aside className="hidden lg:block w-[278px] flex-shrink-0 p-4">
+      <aside className="hidden lg:block w-[278px] flex-shrink-0 p-4 border-r border-neutral-800">
         <Card className="h-full border-neutral-700 bg-neutral-900 flex flex-col overflow-hidden shadow-none">
           <CardHeader className="border-b border-neutral-700 px-4 py-3 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
@@ -307,19 +326,24 @@ function ActiveChatLayout({
           </Button>
         </header>
 
-        <div className="flex flex-1 flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 justify-end">
-          <section className="mx-auto flex w-full max-w-3xl flex-col gap-1 px-4 md:px-6 pb-4 pt-6">
-            <AnimatePresence initial={false}>
-              {allMessages.map((message, index) => (
-                <MessageItem
-                  key={message.id}
-                  message={message}
-                  isLast={index === allMessages.length - 1 && !awaitingResponse}
-                />
-              ))}
-            </AnimatePresence>
-            {awaitingResponse && <Loading tool={currentToolCall} />}
-            <div ref={messagesEndRef} className="h-0" />
+        <div className="flex flex-1 flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
+          <div className="flex-grow"></div>
+          <section className="flex w-full flex-col px-4 md:px-6 pb-4 pt-6">
+            <div className="mx-auto w-full max-w-3xl">
+              <AnimatePresence initial={false}>
+                {allMessages.map((message, index) => (
+                  <MessageItem
+                    key={message.id}
+                    message={message}
+                    isLast={
+                      index === allMessages.length - 1 && !awaitingResponse
+                    }
+                  />
+                ))}
+              </AnimatePresence>
+              {awaitingResponse && <Loading tool={currentToolCall} />}
+              <div ref={messagesEndRef} className="h-0" />
+            </div>
           </section>
         </div>
 
@@ -354,7 +378,7 @@ function ActiveChatLayout({
           </Button>
         </section>
 
-        <section className="sticky bottom-0 w-full p-3 md:p-4 z-20">
+        <section className="sticky bottom-0 w-full p-3 md:p-4 z-20 bg-neutral-900/95 pt-8">
           <div className="max-w-3xl mx-auto">
             <InputArea
               input={input}
@@ -569,7 +593,11 @@ interface InputAreaProps {
   input: string;
   textareaRef?: React.RefObject<HTMLTextAreaElement>;
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onFormSubmit: (e: SubmitEventTypes) => void;
+  onFormSubmit: (
+    e:
+      | React.FormEvent<HTMLFormElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>
+  ) => void;
   awaitingResponse: boolean;
 }
 
@@ -580,34 +608,116 @@ function InputArea({
   onFormSubmit,
   awaitingResponse,
 }: InputAreaProps) {
+  const [textareaHeight, setTextareaHeight] = useState(100);
   const minHeight = 100;
   const maxHeight = 300;
+  const dragStart = useRef<number | null>(null);
+  const startHeight = useRef<number>(100);
   const internalRef = useRef<HTMLTextAreaElement>(null);
 
   // Use the provided ref or fall back to our internal ref
   const textareaRefToUse = textareaRef || internalRef;
 
-  // Auto-resize textarea based on content
-  useEffect(() => {
-    const textarea = textareaRefToUse.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      const scrollHeight = textarea.scrollHeight;
-      const newHeight = Math.min(maxHeight, Math.max(minHeight, scrollHeight));
-      textarea.style.height = `${newHeight}px`;
-    }
-  }, [input, textareaRefToUse, minHeight, maxHeight]);
+  const startDrag = useCallback(
+    (clientY: number) => {
+      dragStart.current = clientY;
+      startHeight.current = textareaHeight;
+      document.body.style.cursor = "ns-resize";
+    },
+    [textareaHeight]
+  );
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey && !awaitingResponse && input.trim()) {
+  const onDragStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      startDrag(e.clientY);
+      document.addEventListener("mousemove", onDragMove);
+      document.addEventListener("mouseup", onDragEnd);
+    },
+    [startDrag]
+  );
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      startDrag(e.touches[0].clientY);
+      document.addEventListener("touchmove", onTouchMove);
+      document.addEventListener("touchend", onTouchEnd);
+    },
+    [startDrag]
+  );
+
+  const moveDrag = useCallback(
+    (clientY: number) => {
+      if (dragStart.current === null) return;
+      const delta = clientY - dragStart.current;
+      const newHeight = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight.current + delta)
+      );
+      setTextareaHeight(newHeight);
+    },
+    [maxHeight, minHeight]
+  );
+
+  const onDragMove = useCallback(
+    (e: MouseEvent) => {
+      moveDrag(e.clientY);
+    },
+    [moveDrag]
+  );
+
+  const onTouchMove = useCallback(
+    (e: TouchEvent) => {
+      e.preventDefault(); // Prevent scrolling while dragging
+      moveDrag(e.touches[0].clientY);
+    },
+    [moveDrag]
+  );
+
+  const endDrag = useCallback(() => {
+    dragStart.current = null;
+    document.body.style.cursor = "";
+  }, []);
+
+  const onDragEnd = useCallback(() => {
+    document.removeEventListener("mousemove", onDragMove);
+    document.removeEventListener("mouseup", onDragEnd);
+    endDrag();
+  }, [endDrag, onDragMove]);
+
+  const onTouchEnd = useCallback(() => {
+    document.removeEventListener("touchmove", onTouchMove);
+    document.removeEventListener("touchend", onTouchEnd);
+    endDrag();
+  }, [endDrag, onTouchMove]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (
+        e.key === "Enter" &&
+        !e.shiftKey &&
+        !awaitingResponse &&
+        input.trim()
+      ) {
+        e.preventDefault();
+        onFormSubmit(e);
+      }
+    },
+    [awaitingResponse, input, onFormSubmit]
+  );
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      onFormSubmit(e);
-    }
-  };
+      if (input.trim() && !awaitingResponse) {
+        onFormSubmit(e);
+      }
+    },
+    [input, awaitingResponse, onFormSubmit]
+  );
 
   return (
-    <form onSubmit={onFormSubmit} className="w-full">
-      <div className="relative w-full">
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="relative flex w-full flex-col">
         <Textarea
           ref={textareaRefToUse}
           value={input}
@@ -617,11 +727,14 @@ function InputArea({
           rows={1}
           disabled={awaitingResponse}
           style={{
+            height: `${textareaHeight}px`,
+            borderBottomLeftRadius: "0",
+            borderBottomRightRadius: "0",
             minHeight: `${minHeight}px`,
             maxHeight: `${maxHeight}px`,
           }}
           className={cn(
-            "flex w-full border border-input bg-[#353535]/30 px-4 py-4 text-base text-neutral-100 shadow-lg placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 overflow-y-auto pr-16 rounded-2xl resize-none"
+            "flex w-full border border-neutral-700 bg-neutral-800/80 px-4 py-3 text-base text-neutral-100 shadow-md placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 overflow-y-auto pr-12 rounded-t-xl rounded-b-none"
           )}
         />
         <Button
@@ -629,12 +742,20 @@ function InputArea({
           size="icon"
           disabled={awaitingResponse || !input.trim()}
           className={cn(
-            "absolute right-3 bottom-3 flex items-center justify-center text-primary-foreground transition-colors duration-200 ease-in-out bg-primary hover:bg-primary/90 disabled:bg-neutral-600 disabled:opacity-70",
-            "h-10 w-10 rounded-full"
+            "absolute right-2 top-2 flex items-center justify-center rounded-lg bg-blue-600 text-white transition-colors duration-200 ease-in-out hover:bg-blue-700 disabled:bg-neutral-600 disabled:opacity-70",
+            "h-8 w-8"
           )}
         >
           <SendHorizonal className="size-4" />
         </Button>
+        <div
+          onMouseDown={onDragStart}
+          onTouchStart={onTouchStart}
+          className="cursor-ns-resize touch-none flex items-center justify-center h-6 w-full rounded-b-xl border-b border-x border-neutral-700 bg-neutral-800/80 hover:bg-neutral-700/50 transition-colors"
+        >
+          <div className="w-10 h-1 bg-neutral-600 rounded-full mb-1"></div>
+          <span className="sr-only">Drag to resize</span>
+        </div>
       </div>
     </form>
   );
