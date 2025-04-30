@@ -119,6 +119,9 @@ export default function ChatPage({}: ChatPageProps) {
       messages.length === 0
     ) {
       setMessages(initialMessages);
+
+      // Don't use auto-scrolling for initial load - let the flex layout position it naturally
+      // This prevents the jarring/blinking effect when opening a chat
     }
   }, [hasLoadedInitialMessages, initialMessages, messages.length, setMessages]);
 
@@ -204,7 +207,7 @@ export default function ChatPage({}: ChatPageProps) {
 
       {/* Main content area that scrolls */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end">
           <ChatBody
             allMessages={allMessages}
             awaitingResponse={awaitingResponse}

@@ -25,7 +25,7 @@ interface ChatBodyProps {
 // This ensures the component has consistent class names between server and client
 const EmptyState = memo(function EmptyState() {
   return (
-    <div className="w-full px-4 py-8 mt-auto">
+    <div className="w-full px-4 py-8 flex flex-col h-full justify-end">
       <div className="max-w-3xl mx-auto">
         {/* Logo and Title */}
         <div className="flex items-center gap-3 justify-center mb-8">
@@ -178,36 +178,54 @@ export const ChatBody = memo(function ChatBody({
   currentToolCall,
   messagesEndRef,
 }: ChatBodyProps) {
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
+  // Function to scroll to bottom
+  const scrollToBottom = (immediate = false) => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scrollIntoView({
+        behavior: immediate ? "auto" : "smooth",
+        block: "end",
+      });
     }
-  }, [allMessages.length, messagesEndRef]);
+  };
+
+  // Only scroll for new messages, not on initial load
+  useEffect(() => {
+    if (allMessages.length > 0) {
+      // Only smooth scroll for new messages, not initial load
+      const isNewMessage = allMessages.length > 0;
+      if (isNewMessage) {
+        scrollToBottom(false); // Use smooth scrolling for new messages
+      }
+    }
+  }, [allMessages.length]);
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
-      <div className="flex flex-col min-h-full justify-end">
+    <div className="flex flex-col h-full">
+      {/* Always keep the flex-grow spacer to push content to bottom */}
+      <div className="flex-grow"></div>
+      <div className="flex flex-col">
         {allMessages.length === 0 ? (
           <EmptyState />
         ) : (
-          <section className="mx-auto w-full max-w-3xl flex flex-col gap-3 px-4 md:px-6 pb-4 pt-6 mt-auto">
-            <AnimatePresence initial={false} presenceAffectsLayout={false}>
-              {allMessages.map((message, index) =>
-                shouldRenderMessage(index, allMessages) ? (
-                  <MessageItem
-                    key={message.id}
-                    message={message}
-                    isLast={
-                      index === allMessages.length - 1 && !awaitingResponse
-                    }
-                  />
-                ) : null
-              )}
-            </AnimatePresence>
-            {awaitingResponse && <Loading tool={currentToolCall} />}
-            <div ref={messagesEndRef} className="h-0" />
-          </section>
+          <div className="mx-auto w-full max-w-3xl flex flex-col gap-3 px-4 md:px-6 pb-4 pt-6">
+            <div className="flex flex-col">
+              <AnimatePresence initial={false} presenceAffectsLayout={false}>
+                {allMessages.map((message, index) =>
+                  shouldRenderMessage(index, allMessages) ? (
+                    <MessageItem
+                      key={message.id}
+                      message={message}
+                      isLast={
+                        index === allMessages.length - 1 && !awaitingResponse
+                      }
+                    />
+                  ) : null
+                )}
+              </AnimatePresence>
+              {awaitingResponse && <Loading tool={currentToolCall} />}
+              <div ref={messagesEndRef} className="h-0" />
+            </div>
+          </div>
         )}
       </div>
     </div>

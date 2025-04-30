@@ -189,7 +189,7 @@ function ChatPageContent() {
       <ChatHeader />
 
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        <div className="flex-1 overflow-y-auto flex flex-col justify-end">
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end">
           <ChatBody
             allMessages={allMessages}
             awaitingResponse={awaitingResponse}
