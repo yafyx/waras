@@ -8,7 +8,7 @@ import {
 
 export function InfoBoxes() {
   return (
-    <div className="grid gap-4 md:grid-cols-3 w-full max-w-3xl">
+    <div className="grid gap-4 md:grid-cols-3 w-full">
       {/* Info Box 1 */}
       <Card className="group relative border border-neutral-800/80 bg-gradient-to-br from-neutral-900 to-neutral-950 overflow-hidden transition-all duration-300 hover:border-blue-500/20 hover:shadow-md hover:shadow-blue-500/5 p-4">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -35,7 +35,7 @@ export function InfoBoxes() {
             Privasi Terjamin
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 mt-2 relative z-10">
+        <CardContent className="p-0 mt-2 relative z-10 hidden md:block">
           <CardDescription className="text-sm text-neutral-400">
             Percakapan Anda{" "}
             <span className="text-blue-400 font-medium">tidak pernah</span>{" "}
@@ -78,7 +78,7 @@ export function InfoBoxes() {
             Respon Cepat
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 mt-2 relative z-10">
+        <CardContent className="p-0 mt-2 relative z-10 hidden md:block">
           <CardDescription className="text-sm text-neutral-400">
             Didukung oleh model AI terkini untuk jawaban{" "}
             <span className="text-green-400 font-medium">instan</span>.
@@ -112,7 +112,7 @@ export function InfoBoxes() {
             Fokus Psikologi
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 mt-2 relative z-10">
+        <CardContent className="p-0 mt-2 relative z-10 hidden md:block">
           <CardDescription className="text-sm text-neutral-400">
             Dirancang khusus untuk menjawab pertanyaan seputar{" "}
             <span className="text-purple-400 font-medium">psikologi</span>.
