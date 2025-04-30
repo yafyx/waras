@@ -2,10 +2,8 @@
 
 import Image from "next/image";
 import { Message } from "ai";
-import { useChat } from "ai/react";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
@@ -19,14 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Plus,
@@ -42,10 +33,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { InfoBoxes } from "@/components/info-boxes";
 import { v4 as uuidv4 } from "uuid";
-
-interface SubmitEventTypes {
-  preventDefault: () => void;
-}
 
 export default function Home() {
   const [input, setInput] = useState("");

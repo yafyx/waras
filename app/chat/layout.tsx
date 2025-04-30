@@ -3,20 +3,12 @@
 import { Sidebar } from "@/components/chat";
 import { useParams, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback, useMemo } from "react";
-
-interface ChatMessage {
-  role: string;
-  content: string;
-  createdAt: string | Date;
-  id: string;
-}
-
-interface ChatInfo {
-  id: string;
-  messages: ChatMessage[];
-  firstMessage: string;
-  timestamp: string;
-}
+import {
+  getAllChatsFromLocalStorage,
+  isStorageAvailable,
+  ChatInfo,
+} from "@/lib/chat-storage";
+import { toast } from "sonner";
 
 export default function ChatLayout({
   children,
@@ -27,72 +19,43 @@ export default function ChatLayout({
   const params = useParams();
   const [chatList, setChatList] = useState<ChatInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [storageAvailable] = useState(() => isStorageAvailable());
 
-  // Cache chat list to pass to sidebar and avoid recreation
+  // Load and cache chat list
   const loadChatList = useCallback(() => {
-    // Set loading state
+    if (!storageAvailable) {
+      setIsLoading(false);
+      setChatList([]);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       // Use setTimeout to defer intensive operations
       setTimeout(() => {
-        // Get all chat keys from localStorage
-        const chatKeys = Object.keys(localStorage).filter((key) =>
-          key.startsWith("chat-")
-        );
-
-        // Extract and parse chat data
-        const chatData = chatKeys
-          .map((key) => {
-            const id = key.replace("chat-", "");
-            try {
-              const data = JSON.parse(localStorage.getItem(key) || "{}");
-              const firstUserMessage =
-                data.messages?.find((m: ChatMessage) => m.role === "user")
-                  ?.content || "New Chat";
-              const lastMessageTimestamp =
-                data.messages?.length > 0
-                  ? data.messages[data.messages.length - 1].createdAt
-                  : Date.now();
-              return {
-                id,
-                messages: data.messages || [],
-                firstMessage:
-                  firstUserMessage.substring(0, 30) +
-                  (firstUserMessage.length > 30 ? "..." : ""),
-                timestamp: new Date(lastMessageTimestamp).toISOString(),
-              };
-            } catch (e) {
-              console.error(`Error parsing chat ${id}:`, e);
-              return {
-                id,
-                messages: [],
-                firstMessage: "Error loading chat",
-                timestamp: new Date().toISOString(),
-              };
-            }
-          })
-          .filter(Boolean)
-          .sort((a, b) => {
-            const dateA = new Date(a.timestamp || 0);
-            const dateB = new Date(b.timestamp || 0);
-            return dateB.getTime() - dateA.getTime();
-          });
-
-        setChatList(chatData as ChatInfo[]);
+        const chats = getAllChatsFromLocalStorage();
+        setChatList(chats);
         setIsLoading(false);
       }, 0);
     } catch (error) {
       console.error("Error loading chat list:", error);
+      toast("Failed to load chat list");
       setIsLoading(false);
     }
-  }, []);
+  }, [storageAvailable]);
 
   // Memoize the current chat ID to prevent unnecessary rerenders
   const currentChatId = useMemo(() => params?.id as string, [params]);
 
   // Load chat list on mount and when storage changes, but not on every pathname change
   useEffect(() => {
+    if (!storageAvailable) {
+      toast(
+        "Local storage is not available. Chat history won't be saved or loaded."
+      );
+    }
+
     // Initial load
     loadChatList();
 
@@ -123,7 +86,7 @@ export default function ChatLayout({
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("waras:refreshChatList", handleCustomRefresh);
     };
-  }, [loadChatList]);
+  }, [loadChatList, storageAvailable]);
 
   // Memoize the return value to prevent unnecessary rerenders
   return useMemo(

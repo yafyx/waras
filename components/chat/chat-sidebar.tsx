@@ -22,19 +22,18 @@ import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { timeAgo } from "@/lib/utils";
+import {
+  getAllChatsFromLocalStorage,
+  deleteChatFromLocalStorage,
+  ChatInfo,
+} from "@/lib/chat-storage";
+import { toast } from "sonner";
 
 interface ChatMessage {
   role: string;
   content: string;
   createdAt: string | Date;
   id: string;
-}
-
-interface ChatInfo {
-  id: string;
-  messages: ChatMessage[];
-  firstMessage: string;
-  timestamp: string;
 }
 
 interface SidebarProps {
@@ -48,17 +47,79 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
+  const [localChatList, setLocalChatList] = useState<ChatInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load chats on mount and when storage changes
+  useEffect(() => {
+    const loadChats = () => {
+      try {
+        setIsLoading(true);
+        const chats = getAllChatsFromLocalStorage();
+        setLocalChatList(chats);
+      } catch (error) {
+        console.error("Error loading chat list:", error);
+        toast("Failed to load chat list");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Initial load
+    loadChats();
+
+    // Listen for refresh events
+    const refreshHandler = () => {
+      loadChats();
+    };
+    window.addEventListener("waras:refreshChatList", refreshHandler);
+
+    // Listen for storage events from other tabs
+    const storageHandler = (e: StorageEvent) => {
+      if (e.key === null || e.key.startsWith("chat-")) {
+        loadChats();
+      }
+    };
+    window.addEventListener("storage", storageHandler);
+
+    return () => {
+      window.removeEventListener("waras:refreshChatList", refreshHandler);
+      window.removeEventListener("storage", storageHandler);
+    };
+  }, []);
+
+  // Determine which list to use - either the prop or our local state
+  const effectiveChatList = chatList.length > 0 ? chatList : localChatList;
 
   const filteredChats = searchQuery.trim()
-    ? chatList.filter((chat) =>
-        chat.firstMessage.toLowerCase().includes(searchQuery.toLowerCase())
+    ? effectiveChatList.filter((chat) =>
+        chat.firstMessage?.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : chatList;
+    : effectiveChatList;
 
   // Handler for new chat button to dispatch a custom event
   const handleNewChat = () => {
-    // Dispatch a custom event that will be caught by the layout component
     window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
+  };
+
+  // Handler for chat deletion
+  const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (confirm("Are you sure you want to delete this chat?")) {
+      const success = deleteChatFromLocalStorage(chatId);
+
+      if (success) {
+        if (currentChatId === chatId) {
+          // If we're on the chat that was deleted, redirect to new chat
+          router.push("/chat");
+        }
+        toast("Chat deleted successfully");
+      } else {
+        toast("Failed to delete chat");
+      }
+    }
   };
 
   return (
@@ -233,11 +294,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                       size="icon"
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 hover:bg-neutral-700 hover:text-red-400 transition-all duration-200"
                       title="Delete chat"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        // Delete functionality would go here
-                        // console.log(`Delete chat ${chat.id}`);
-                      }}
+                      onClick={(e) => handleDeleteChat(e, chat.id)}
                     >
                       <Trash2 className="size-3" />
                     </Button>

@@ -3,10 +3,17 @@
 import { Message } from "ai";
 import { useChat } from "ai/react";
 import { motion } from "framer-motion";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useTransition } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { ChatHeader, ChatBody, InputArea } from "@/components/chat";
 import dynamic from "next/dynamic";
+import {
+  loadChatFromLocalStorage,
+  saveChatToLocalStorage,
+  isStorageAvailable,
+} from "@/lib/chat-storage";
+import { toast } from "sonner";
+import { useOptimistic } from "react";
 
 // Animation variants with reduced duration
 const variants = {
@@ -29,11 +36,15 @@ export default function ChatPage({}: ChatPageProps) {
   const [hasLoadedInitialMessages, setHasLoadedInitialMessages] =
     useState(false);
   const [isResponseComplete, setIsResponseComplete] = useState(true);
+  const [storageAvailable] = useState(() => isStorageAvailable());
+  const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   // Helper function to filter messages
   const getFilteredMessages = (msgs: Message[]) => {
     return msgs.filter(
-      (m: Message) => m.role === "user" || m.role === "assistant"
+      (m: Message) =>
+        m.role === "user" || m.role === "assistant" || m.role === "system"
     );
   };
 
@@ -43,13 +54,26 @@ export default function ChatPage({}: ChatPageProps) {
 
     const loadChat = () => {
       try {
-        const savedChat = localStorage.getItem(`chat-${chatId}`);
-        if (savedChat) {
-          const parsedChat = JSON.parse(savedChat);
-          setInitialMessages(parsedChat.messages || []);
+        if (!storageAvailable) {
+          setLoadingError(
+            "Local storage is not available. Unable to load chat history."
+          );
+          setHasLoadedInitialMessages(true);
+          return;
+        }
+
+        // Use our utility to load chat messages
+        const messages = loadChatFromLocalStorage(chatId);
+        setInitialMessages(messages);
+
+        if (messages.length === 0) {
+          setLoadingError(
+            "No chat history found. This chat may have been deleted or never existed."
+          );
         }
       } catch (error) {
-        console.error("Error parsing saved chat:", error);
+        console.error("Error loading saved chat:", error);
+        setLoadingError("Failed to load chat history.");
       } finally {
         setHasLoadedInitialMessages(true);
       }
@@ -60,8 +84,15 @@ export default function ChatPage({}: ChatPageProps) {
 
     return () => {
       setHasLoadedInitialMessages(false);
+      setLoadingError(null);
     };
-  }, [chatId]);
+  }, [chatId, storageAvailable]);
+
+  // Set up optimistic rendering for new messages
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic<
+    Message[],
+    Message
+  >(initialMessages, (state, newMessage) => [...state, newMessage]);
 
   const chatOptions = useMemo(
     () => ({
@@ -71,37 +102,40 @@ export default function ChatPage({}: ChatPageProps) {
       onToolCall({ toolCall }: { toolCall: { toolName: string } }) {
         setToolCall(toolCall.toolName);
         setIsResponseComplete(false);
+
+        // Add system message to indicate tool is being used
+        startTransition(() => {
+          const systemMessage: Message = {
+            id: Date.now().toString() + "-system",
+            role: "system",
+            content: `Using ${toolCall.toolName} tool...`,
+            createdAt: new Date(),
+          };
+          addOptimisticMessage(systemMessage);
+        });
       },
       onFinish: () => {
         setIsResponseComplete(true);
-
-        // Save chat with a small delay and throttle
-        if (messages.length > 0) {
-          // Throttle saving to localStorage
-          const timeoutId = setTimeout(() => {
-            try {
-              const filteredMessages = getFilteredMessages(messages);
-              // Use a smaller JSON representation
-              localStorage.setItem(
-                `chat-${chatId}`,
-                JSON.stringify({
-                  id: chatId,
-                  messages: filteredMessages,
-                })
-              );
-
-              // Trigger refresh of the chat list
-              window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
-            } catch (error) {
-              console.error("Error saving chat:", error);
-            }
-          }, 500);
-
-          return () => clearTimeout(timeoutId);
-        }
+      },
+      onError: (error: Error) => {
+        console.error("Chat error:", error);
+        startTransition(() => {
+          const errorMessage: Message = {
+            id: Date.now().toString() + "-error",
+            role: "system",
+            content: `Error: ${
+              error.message ||
+              "Something went wrong with the chat. Please try again."
+            }`,
+            createdAt: new Date(),
+          };
+          addOptimisticMessage(errorMessage);
+        });
+        setIsResponseComplete(true);
+        toast.error("Chat error. Please try again.");
       },
     }),
-    [chatId, hasLoadedInitialMessages, initialMessages]
+    [chatId, hasLoadedInitialMessages, initialMessages, addOptimisticMessage]
   );
 
   const {
@@ -146,27 +180,19 @@ export default function ChatPage({}: ChatPageProps) {
 
   // Throttled localStorage updates
   useEffect(() => {
-    if (messages.length === 0 || !isResponseComplete) return;
+    if (messages.length === 0 || !isResponseComplete || !storageAvailable)
+      return;
 
     const saveTimeout = setTimeout(() => {
-      try {
-        localStorage.setItem(
-          `chat-${chatId}`,
-          JSON.stringify({
-            id: chatId,
-            messages: allMessages,
-          })
-        );
+      const success = saveChatToLocalStorage(chatId, allMessages);
 
-        // Trigger refresh of the chat list
-        window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
-      } catch (error) {
-        console.error("Error saving messages to localStorage:", error);
+      if (!success) {
+        toast("Failed to save chat history.");
       }
     }, 1000);
 
     return () => clearTimeout(saveTimeout);
-  }, [messages, chatId, isResponseComplete, allMessages]);
+  }, [messages, chatId, isResponseComplete, allMessages, storageAvailable]);
 
   const currentToolCall = useMemo(() => {
     const tools = messages.slice(-1)[0]?.toolInvocations;
@@ -197,12 +223,23 @@ export default function ChatPage({}: ChatPageProps) {
 
     setIsResponseComplete(false);
 
+    // Add the message optimistically - wrapped in startTransition
+    startTransition(() => {
+      const optimisticUserMessage: Message = {
+        id: Date.now().toString(),
+        content: trimmedInput,
+        role: "user",
+        createdAt: new Date(),
+      };
+
+      addOptimisticMessage(optimisticUserMessage);
+    });
+
     // Let the useChat hook handle the submission
     handleSubmit(e as React.FormEvent<HTMLFormElement>);
     textareaRef.current?.focus();
   };
 
-  // Use the helper function for the onFormSubmit handler
   const onFormSubmit = (
     e:
       | React.FormEvent<HTMLFormElement>
@@ -211,6 +248,13 @@ export default function ChatPage({}: ChatPageProps) {
     handleFormSubmit(e);
   };
 
+  // Show loading error if there was a problem
+  useEffect(() => {
+    if (loadingError) {
+      toast(loadingError);
+    }
+  }, [loadingError]);
+
   return (
     <motion.div
       key={pathname}
@@ -218,30 +262,29 @@ export default function ChatPage({}: ChatPageProps) {
       animate="enter"
       exit="exit"
       variants={variants}
-      transition={{ duration: 0.1, type: "tween" }}
+      transition={{ duration: 0.15, type: "tween" }}
       className="flex flex-col h-screen"
     >
       <ChatHeader />
 
-      {/* Main content area that scrolls */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end">
           <ChatBody
             allMessages={allMessages}
-            awaitingResponse={awaitingResponse}
+            awaitingResponse={awaitingResponse || isPending}
             currentToolCall={currentToolCall}
             messagesEndRef={messagesEndRef}
           />
         </div>
 
-        <section className="w-full p-3 md:p-4 z-20 bg-background">
+        <section className="sticky bottom-0 w-full p-3 md:p-4 z-20 bg-background">
           <div className="max-w-3xl mx-auto">
             <InputArea
               input={input}
               textareaRef={textareaRef}
               handleInputChange={handleInputChange}
               onFormSubmit={onFormSubmit}
-              awaitingResponse={awaitingResponse}
+              awaitingResponse={awaitingResponse || isPending}
             />
           </div>
         </section>

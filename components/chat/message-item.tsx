@@ -62,6 +62,7 @@ MarkdownContent.displayName = "MarkdownContent";
 // Memoized message item component
 function MessageItemComponent({ message, isLast }: MessageItemProps) {
   const isUser = message.role === "user";
+  const isSystem = message.role === "system";
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
@@ -78,6 +79,22 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
       return () => clearTimeout(timer);
     }
   }, [isCopied]);
+
+  // Handle system messages differently
+  if (isSystem) {
+    return (
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={messageVariants}
+        transition={{ duration: 0.15 }}
+        className="text-center py-2 px-4 max-w-3xl mx-auto text-sm text-neutral-400 italic"
+      >
+        {message.content}
+      </motion.div>
+    );
+  }
 
   // Simplified content processing
   const processedContent = message.content;
@@ -128,6 +145,7 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
             className="flex items-center gap-1.5 text-neutral-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleCopy}
             disabled={isCopied}
+            aria-label={isCopied ? "Copied" : "Copy message"}
           >
             {isCopied ? (
               <>

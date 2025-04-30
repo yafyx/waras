@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { InfoBoxes } from "@/components/info-boxes";
 
 interface ChatBodyProps {
@@ -82,17 +82,32 @@ export const ChatBody = memo(function ChatBody({
   const isInitialMount = useRef(true);
   // Track if we have attached a ResizeObserver
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  // State for error handling
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
+    // Reset error state when messages change
+    setHasError(false);
+
     if (allMessages.length > 0) {
       if (isInitialMount.current) {
         // Use requestAnimationFrame to wait for DOM paint
         requestAnimationFrame(() => {
-          scrollToBottom(true);
+          try {
+            scrollToBottom(true);
+          } catch (error) {
+            console.error("Error scrolling to bottom:", error);
+            setHasError(true);
+          }
           isInitialMount.current = false;
         });
       } else {
-        scrollToBottom(false);
+        try {
+          scrollToBottom(false);
+        } catch (error) {
+          console.error("Error scrolling to bottom:", error);
+          setHasError(true);
+        }
       }
     }
   }, [allMessages.length]);
@@ -105,14 +120,19 @@ export const ChatBody = memo(function ChatBody({
     }
     // Only observe after initial mount
     if (!isInitialMount.current) {
-      resizeObserverRef.current = new window.ResizeObserver(() => {
-        scrollToBottom(true);
-      });
-      // Observe the parent node of the messagesEndRef (the chat container)
-      if (messagesEndRef.current.parentNode) {
-        resizeObserverRef.current.observe(
-          messagesEndRef.current.parentNode as Element
-        );
+      try {
+        resizeObserverRef.current = new window.ResizeObserver(() => {
+          scrollToBottom(true);
+        });
+        // Observe the parent node of the messagesEndRef (the chat container)
+        if (messagesEndRef.current.parentNode) {
+          resizeObserverRef.current.observe(
+            messagesEndRef.current.parentNode as Element
+          );
+        }
+      } catch (error) {
+        console.error("Error setting up ResizeObserver:", error);
+        setHasError(true);
       }
     }
     return () => {
@@ -146,6 +166,17 @@ export const ChatBody = memo(function ChatBody({
                 )}
               </AnimatePresence>
               {awaitingResponse && <Loading tool={currentToolCall} />}
+              {hasError && (
+                <div className="text-center py-2 text-sm text-yellow-500">
+                  Some content may not display correctly.
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="ml-2 underline hover:text-yellow-300"
+                  >
+                    Refresh
+                  </button>
+                </div>
+              )}
               <div ref={messagesEndRef} className="h-0" />
             </div>
           </div>

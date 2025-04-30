@@ -3,10 +3,24 @@
 import { Message } from "ai";
 import { useChat } from "ai/react";
 import { motion } from "framer-motion";
-import { useState, useRef, useEffect, useMemo, Suspense } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  Suspense,
+  useTransition,
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ChatHeader, ChatBody, InputArea } from "@/components/chat";
+import {
+  saveChatToLocalStorage,
+  loadChatFromLocalStorage,
+  isStorageAvailable,
+} from "@/lib/chat-storage";
+import { toast } from "sonner";
+import { useOptimistic } from "react";
 
 // Animation variants
 const variants = {
@@ -25,13 +39,25 @@ function ChatPageContent() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isResponseComplete, setIsResponseComplete] = useState(true);
   const [chatId] = useState(() => uuidv4());
+  const [storageAvailable] = useState(() => isStorageAvailable());
+  const [isPending, startTransition] = useTransition();
 
   // Define filtered messages function before using it
   const getFilteredMessages = (msgs: Message[]) => {
     return msgs.filter(
-      (m: Message) => m.role === "user" || m.role === "assistant"
+      (m: Message) =>
+        m.role === "user" || m.role === "assistant" || m.role === "system"
     );
   };
+
+  // Set up optimistic messaging for instant UI feedback
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic<
+    Message[],
+    Message
+  >(
+    [], // Start with empty array
+    (state, newMessage) => [...state, newMessage]
+  );
 
   const {
     messages,
@@ -47,9 +73,38 @@ function ChatPageContent() {
     onToolCall({ toolCall }: { toolCall: { toolName: string } }) {
       setToolCall(toolCall.toolName);
       setIsResponseComplete(false);
+
+      // Add system message to indicate tool is being used - wrapped in startTransition
+      startTransition(() => {
+        const systemMessage: Message = {
+          id: Date.now().toString() + "-system",
+          role: "system",
+          content: `Using ${toolCall.toolName} tool...`,
+          createdAt: new Date(),
+        };
+        addOptimisticMessage(systemMessage);
+      });
     },
     onFinish: () => {
       setIsResponseComplete(true);
+    },
+    onError: (error) => {
+      console.error("Chat error:", error);
+      // Add system message to inform user of error - wrapped in startTransition
+      startTransition(() => {
+        const errorMessage: Message = {
+          id: Date.now().toString() + "-error",
+          role: "system",
+          content: `Error: ${
+            error.message ||
+            "Something went wrong with the chat. Please try again."
+          }`,
+          createdAt: new Date(),
+        };
+        addOptimisticMessage(errorMessage);
+      });
+      setIsResponseComplete(true);
+      toast.error("Chat error. Please try again.");
     },
   });
 
@@ -58,20 +113,23 @@ function ChatPageContent() {
     return getFilteredMessages(messages);
   }, [messages]);
 
+  // Merge optimistic messages with actual messages for display if needed
+  const displayMessages = useMemo(() => {
+    if (optimisticMessages.length === 0) return allMessages;
+
+    // If we have real messages, use them; otherwise use the optimistic ones
+    return allMessages.length > 0 ? allMessages : optimisticMessages;
+  }, [allMessages, optimisticMessages]);
+
   // Save messages to localStorage whenever they change and redirect if needed
   useEffect(() => {
-    if (messages.length > 0 && isResponseComplete) {
-      // Save chat state to localStorage
-      localStorage.setItem(
-        `chat-${chatId}`,
-        JSON.stringify({
-          id: chatId,
-          messages: allMessages,
-        })
-      );
+    if (messages.length > 0 && isResponseComplete && storageAvailable) {
+      // Save chat state to localStorage using our utility function
+      const success = saveChatToLocalStorage(chatId, allMessages);
 
-      // Trigger refresh of the chat list
-      window.dispatchEvent(new CustomEvent("waras:refreshChatList"));
+      if (!success) {
+        toast("Warning: Failed to save chat history.");
+      }
 
       // Only redirect if we have a complete conversation and aren't already at the specific chat URL
       if (messages.length >= 2 && !pathname.includes(`/chat/${chatId}`)) {
@@ -79,7 +137,15 @@ function ChatPageContent() {
         router.replace(`/chat/${chatId}`);
       }
     }
-  }, [messages, chatId, isResponseComplete, allMessages, pathname, router]);
+  }, [
+    messages,
+    chatId,
+    isResponseComplete,
+    allMessages,
+    pathname,
+    router,
+    storageAvailable,
+  ]);
 
   const currentToolCall = useMemo(() => {
     const tools = messages.slice(-1)[0]?.toolInvocations;
@@ -110,6 +176,17 @@ function ChatPageContent() {
 
     setIsResponseComplete(false);
 
+    // Add message optimistically for instant feedback - wrapped in startTransition
+    startTransition(() => {
+      const optimisticUserMessage: Message = {
+        id: Date.now().toString(),
+        content: trimmedInput,
+        role: "user",
+        createdAt: new Date(),
+      };
+      addOptimisticMessage(optimisticUserMessage);
+    });
+
     // Let the useChat hook handle the submission
     handleSubmit(e as React.FormEvent<HTMLFormElement>);
     textareaRef.current?.focus();
@@ -123,6 +200,15 @@ function ChatPageContent() {
   ) => {
     handleFormSubmit(e);
   };
+
+  // Show storage warning if localStorage isn't available
+  useEffect(() => {
+    if (!storageAvailable) {
+      toast(
+        "Warning: Local storage is not available. Chat history won't be saved."
+      );
+    }
+  }, [storageAvailable]);
 
   return (
     <motion.div
@@ -139,8 +225,8 @@ function ChatPageContent() {
       <div className="flex-1 flex flex-col relative overflow-hidden">
         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end">
           <ChatBody
-            allMessages={allMessages}
-            awaitingResponse={awaitingResponse}
+            allMessages={displayMessages}
+            awaitingResponse={awaitingResponse || isPending}
             currentToolCall={currentToolCall}
             messagesEndRef={messagesEndRef}
           />
@@ -153,7 +239,7 @@ function ChatPageContent() {
               textareaRef={textareaRef}
               handleInputChange={handleInputChange}
               onFormSubmit={onFormSubmit}
-              awaitingResponse={awaitingResponse}
+              awaitingResponse={awaitingResponse || isPending}
             />
           </div>
         </section>
