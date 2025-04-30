@@ -54,21 +54,37 @@ export const InputArea = memo(function InputArea({
     [awaitingResponse, input, onFormSubmit]
   );
 
-  const onDragStart = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      dragStart.current = e.clientY;
+  const startDrag = useCallback(
+    (clientY: number) => {
+      dragStart.current = clientY;
       startHeight.current = textareaHeight;
-      document.addEventListener("mousemove", onDragMove);
-      document.addEventListener("mouseup", onDragEnd);
       document.body.style.cursor = "ns-resize";
     },
     [textareaHeight]
   );
 
-  const onDragMove = useCallback(
-    (e: MouseEvent) => {
+  const onDragStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      startDrag(e.clientY);
+      document.addEventListener("mousemove", onDragMove);
+      document.addEventListener("mouseup", onDragEnd);
+    },
+    [startDrag]
+  );
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      startDrag(e.touches[0].clientY);
+      document.addEventListener("touchmove", onTouchMove);
+      document.addEventListener("touchend", onTouchEnd);
+    },
+    [startDrag]
+  );
+
+  const moveDrag = useCallback(
+    (clientY: number) => {
       if (dragStart.current === null) return;
-      const delta = dragStart.current - e.clientY;
+      const delta = dragStart.current - clientY;
       const newHeight = Math.max(
         minHeight,
         Math.min(maxHeight, startHeight.current + delta)
@@ -78,12 +94,37 @@ export const InputArea = memo(function InputArea({
     [maxHeight, minHeight]
   );
 
-  const onDragEnd = useCallback(() => {
+  const onDragMove = useCallback(
+    (e: MouseEvent) => {
+      moveDrag(e.clientY);
+    },
+    [moveDrag]
+  );
+
+  const onTouchMove = useCallback(
+    (e: TouchEvent) => {
+      e.preventDefault(); // Prevent scrolling while dragging
+      moveDrag(e.touches[0].clientY);
+    },
+    [moveDrag]
+  );
+
+  const endDrag = useCallback(() => {
     dragStart.current = null;
+    document.body.style.cursor = "";
+  }, []);
+
+  const onDragEnd = useCallback(() => {
     document.removeEventListener("mousemove", onDragMove);
     document.removeEventListener("mouseup", onDragEnd);
-    document.body.style.cursor = "";
-  }, [onDragMove]);
+    endDrag();
+  }, [endDrag, onDragMove]);
+
+  const onTouchEnd = useCallback(() => {
+    document.removeEventListener("touchmove", onTouchMove);
+    document.removeEventListener("touchend", onTouchEnd);
+    endDrag();
+  }, [endDrag, onTouchMove]);
 
   // Use passive event handlers for better touch performance
   const handleSubmit = useCallback(
@@ -101,7 +142,8 @@ export const InputArea = memo(function InputArea({
       <div className="relative flex w-full flex-col">
         <div
           onMouseDown={onDragStart}
-          className="cursor-ns-resize flex items-center justify-center h-6 w-full rounded-t-xl border-t border-x border-neutral-700 bg-neutral-800/80 hover:bg-neutral-700/50 transition-colors"
+          onTouchStart={onTouchStart}
+          className="cursor-ns-resize touch-none flex items-center justify-center h-6 w-full rounded-t-xl border-t border-x border-neutral-700 bg-neutral-800/80 hover:bg-neutral-700/50 transition-colors"
         >
           <div className="w-10 h-1 bg-neutral-600 rounded-full mb-1"></div>
           <span className="sr-only">Drag to resize</span>
