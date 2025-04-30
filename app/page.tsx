@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 import { InfoBoxes } from "@/components/info-boxes";
 import { v4 as uuidv4 } from "uuid";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -111,65 +112,68 @@ function InitialLayout({
   awaitingResponse,
 }: InitialLayoutProps) {
   return (
-    <BlurFade
-      key="initial-layout"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3 }}
-      className="flex h-[100dvh] w-full flex-col items-center justify-center dark:bg-neutral-950 text-white"
-    >
-      <div className="relative flex w-full max-w-3xl flex-col items-center justify-center gap-8 px-4 md:px-6">
-        {/* Logo and Title */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center h-[60px]">
-            <Image
-              src="/waras.png"
-              alt="Waras AI Logo"
-              width={55}
-              height={55}
-              className="select-none"
-              draggable="false"
+    <AuroraBackground>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
+      <BlurFade
+        key="initial-layout"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.3 }}
+        className="relative z-10 flex h-[100dvh] w-full flex-col items-center justify-center text-white"
+      >
+        <div className="relative flex w-full max-w-3xl flex-col items-center justify-center gap-8 px-4 md:px-6">
+          {/* Logo and Title */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center h-[60px]">
+              <Image
+                src="/waras.png"
+                alt="Waras AI Logo"
+                width={55}
+                height={55}
+                className="select-none"
+                draggable="false"
+              />
+            </div>
+            <h1 className="text-5xl font-serif flex items-center transform scale-y-125">
+              Waras AI
+            </h1>
+          </div>
+          {/* Input Area */}
+          <div className="w-full">
+            <InputArea
+              input={input}
+              handleInputChange={handleInputChange}
+              onFormSubmit={onFormSubmit}
+              awaitingResponse={awaitingResponse}
             />
           </div>
-          <h1 className="text-5xl font-serif flex items-center transform scale-y-125">
-            Waras AI
-          </h1>
+          {/* Info Boxes */}
+          <div className="w-full">
+            <InfoBoxes />
+          </div>
+          {/* Footer Text */}
+          <p className="flex items-center gap-2 text-sm font-medium text-neutral-600 mt-2 bg-neutral-900/50 px-4 py-3 rounded-full border border-neutral-800 backdrop-blur-sm">
+            <svg
+              width="16"
+              height="20"
+              viewBox="0 0 16 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="size-4"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M8 0C5.23858 0 3 2.23858 3 5V7.12602C1.27477 7.57006 0 9.1362 0 11V16C0 18.2091 1.79086 20 4 20H12C14.2091 20 16 18.2091 16 16V11C16 9.1362 14.7252 7.57006 13 7.12602V5C13 2.23858 10.7614 0 8 0ZM11 7V5C11 3.34315 9.6569 2 8 2C6.3431 2 5 3.34315 5 5V7H11ZM8 11C8.5523 11 9 11.4477 9 12V15C9 15.5523 8.5523 16 8 16C7.4477 16 7 15.5523 7 15V12C7 11.4477 7.4477 11 8 11Z"
+                fill="currentColor"
+              ></path>
+            </svg>
+            AI Chat Psikologi yang Aman & Anonim.
+          </p>
         </div>
-        {/* Input Area */}
-        <div className="w-full">
-          <InputArea
-            input={input}
-            handleInputChange={handleInputChange}
-            onFormSubmit={onFormSubmit}
-            awaitingResponse={awaitingResponse}
-          />
-        </div>
-        {/* Info Boxes */}
-        <div className="w-full">
-          <InfoBoxes />
-        </div>
-        {/* Footer Text */}
-        <p className="flex items-center gap-2 text-sm font-medium text-neutral-600 mt-2 bg-neutral-900/50 px-4 py-3 rounded-full border border-neutral-800 backdrop-blur-sm">
-          <svg
-            width="16"
-            height="20"
-            viewBox="0 0 16 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="size-4"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M8 0C5.23858 0 3 2.23858 3 5V7.12602C1.27477 7.57006 0 9.1362 0 11V16C0 18.2091 1.79086 20 4 20H12C14.2091 20 16 18.2091 16 16V11C16 9.1362 14.7252 7.57006 13 7.12602V5C13 2.23858 10.7614 0 8 0ZM11 7V5C11 3.34315 9.6569 2 8 2C6.3431 2 5 3.34315 5 5V7H11ZM8 11C8.5523 11 9 11.4477 9 12V15C9 15.5523 8.5523 16 8 16C7.4477 16 7 15.5523 7 15V12C7 11.4477 7.4477 11 8 11Z"
-              fill="currentColor"
-            ></path>
-          </svg>
-          AI Chat Psikologi yang Aman & Anonim.
-        </p>
-      </div>
-    </BlurFade>
+      </BlurFade>
+    </AuroraBackground>
   );
 }
 
