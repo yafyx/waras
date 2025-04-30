@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { memo, useEffect, useRef, useState } from "react";
 import { InfoBoxes } from "@/components/info-boxes";
+import { BlurFade } from "@/components/ui/blur-fade";
 
 interface ChatBodyProps {
   allMessages: Message[];
@@ -29,22 +30,26 @@ const EmptyState = memo(function EmptyState() {
     <div className="w-full px-4 py-8 flex flex-col h-full justify-end">
       <div className="max-w-3xl mx-auto w-full">
         {/* Logo and Title */}
-        <div className="flex items-center gap-3 justify-center mb-8">
-          <div className="flex items-center justify-center h-[60px]">
-            <Image
-              src="/waras.png"
-              alt="Waras AI Logo"
-              width={55}
-              height={55}
-              className="select-none"
-              draggable="false"
-              priority
-            />
+        <BlurFade direction="up" delay={0.1}>
+          <div className="flex items-center gap-3 justify-center mb-8">
+            <div className="flex items-center justify-center h-[60px]">
+              <Image
+                src="/waras.png"
+                alt="Waras AI Logo"
+                width={55}
+                height={55}
+                className="select-none"
+                draggable="false"
+                priority
+              />
+            </div>
           </div>
-        </div>
+        </BlurFade>
 
         {/* Info Boxes */}
-        <InfoBoxes />
+        <BlurFade direction="up" delay={0.2}>
+          <InfoBoxes />
+        </BlurFade>
       </div>
     </div>
   );

@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { InfoBoxes } from "@/components/info-boxes";
 import { v4 as uuidv4 } from "uuid";
+import { BlurFade } from "@/components/ui/blur-fade";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -110,7 +111,7 @@ function InitialLayout({
   awaitingResponse,
 }: InitialLayoutProps) {
   return (
-    <motion.section
+    <BlurFade
       key="initial-layout"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -168,7 +169,7 @@ function InitialLayout({
           AI Chat Psikologi yang Aman & Anonim.
         </p>
       </div>
-    </motion.section>
+    </BlurFade>
   );
 }
 
@@ -211,7 +212,7 @@ function ActiveChatLayout({
   }, [allMessages]);
 
   return (
-    <motion.section
+    <BlurFade
       key="active-chat-layout"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -361,7 +362,7 @@ function ActiveChatLayout({
           </div>
         </section>
       </section>
-    </motion.section>
+    </BlurFade>
   );
 }
 
@@ -384,7 +385,7 @@ function MessageItem({ message, isLast }: MessageItemProps) {
   const sourcesContent = hasSources ? parts[1].trim() : "";
 
   return (
-    <motion.section
+    <BlurFade
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -5 }}
@@ -489,7 +490,7 @@ function MessageItem({ message, isLast }: MessageItemProps) {
           </p>
         </div>
       )}
-    </motion.section>
+    </BlurFade>
   );
 }
 
@@ -499,7 +500,7 @@ interface LoadingProps {
 
 function Loading({ tool }: LoadingProps) {
   return (
-    <motion.div
+    <BlurFade
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
@@ -526,7 +527,7 @@ function Loading({ tool }: LoadingProps) {
           {tool ? `Memproses (${tool})...` : "Berpikir..."}
         </span>
       </div>
-    </motion.div>
+    </BlurFade>
   );
 }
 
