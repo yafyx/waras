@@ -218,26 +218,39 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               className="w-[266px] bg-[#121212] text-white border border-neutral-800 rounded-b-2xl rounded-t-none p-1.5"
               style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
             >
-              <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
-                <Image
-                  src="/waras.png"
-                  alt="Waras AI Logo"
-                  width={20}
-                  height={20}
-                  className="select-none mr-2"
-                  draggable="false"
-                />
-                <Link href="/">Beranda</Link>
+              <DropdownMenuItem
+                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
+                asChild
+              >
+                <Link href="/">
+                  <Image
+                    src="/waras.png"
+                    alt="Waras AI Logo"
+                    width={20}
+                    height={20}
+                    className="select-none mr-2"
+                    draggable="false"
+                  />
+                  Beranda
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
-                <Plus className="size-6 mr-2" />
+              <DropdownMenuItem
+                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
+                asChild
+              >
                 <Link href="/chat" onClick={handleNewChat}>
+                  <Plus className="size-6 mr-2" />
                   Chat Baru
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer">
-                <Grid2X2 className="size-6 mr-2" />
-                Grid
+              <DropdownMenuItem
+                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
+                asChild
+              >
+                <Link href="/grid">
+                  <Grid2X2 className="size-6 mr-2" />
+                  Grid
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
