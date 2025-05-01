@@ -140,6 +140,19 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
   const isSystem = message.role === "system";
   const [isCopied, setIsCopied] = useState(false);
 
+  // Moved useEffect higher to ensure it's not seen as conditional
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    if (isCopied) {
+      timer = setTimeout(() => {
+        setIsCopied(false);
+      }, 2000); // Reset after 2 seconds
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isCopied]);
+
   // Check if this message is currently invoking tools
   const toolsInProgress = !isUser && !isSystem && isInvokingTools(message);
 
@@ -153,15 +166,6 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
       setIsCopied(true);
     });
   };
-
-  useEffect(() => {
-    if (isCopied) {
-      const timer = setTimeout(() => {
-        setIsCopied(false);
-      }, 2000); // Reset after 2 seconds
-      return () => clearTimeout(timer);
-    }
-  }, [isCopied]);
 
   // Handle system messages differently
   if (isSystem) {

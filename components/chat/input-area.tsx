@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { SendHorizonal, ArrowUp } from "lucide-react";
-import { useState, useRef, useCallback, memo } from "react";
+import { useState, useRef, useCallback, memo, useEffect } from "react";
 
 interface InputAreaProps {
   input: string;
@@ -38,6 +38,12 @@ export const InputArea = memo(function InputArea({
   // Use the provided ref or fall back to our internal ref
   const textareaRefToUse = textareaRef || internalRef;
 
+  // Store function references to avoid circular dependencies
+  const dragMoveRef = useRef<((e: MouseEvent) => void) | null>(null);
+  const dragEndRef = useRef<(() => void) | null>(null);
+  const touchMoveRef = useRef<((e: TouchEvent) => void) | null>(null);
+  const touchEndRef = useRef<(() => void) | null>(null);
+
   // Memoize the event handlers to prevent recreating on each render
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -54,32 +60,20 @@ export const InputArea = memo(function InputArea({
     [awaitingResponse, input, onFormSubmit]
   );
 
-  const startDrag = useCallback(
-    (clientY: number) => {
-      dragStart.current = clientY;
-      startHeight.current = textareaHeight;
-      document.body.style.cursor = "ns-resize";
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (input.trim() && !awaitingResponse) {
+        onFormSubmit(e);
+      }
     },
-    [textareaHeight]
+    [input, awaitingResponse, onFormSubmit]
   );
 
-  const onDragStart = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      startDrag(e.clientY);
-      document.addEventListener("mousemove", onDragMove);
-      document.addEventListener("mouseup", onDragEnd);
-    },
-    [startDrag]
-  );
-
-  const onTouchStart = useCallback(
-    (e: React.TouchEvent<HTMLDivElement>) => {
-      startDrag(e.touches[0].clientY);
-      document.addEventListener("touchmove", onTouchMove);
-      document.addEventListener("touchend", onTouchEnd);
-    },
-    [startDrag]
-  );
+  const endDrag = useCallback(() => {
+    dragStart.current = null;
+    document.body.style.cursor = "";
+  }, []);
 
   const moveDrag = useCallback(
     (clientY: number) => {
@@ -94,47 +88,57 @@ export const InputArea = memo(function InputArea({
     [maxHeight, minHeight]
   );
 
-  const onDragMove = useCallback(
-    (e: MouseEvent) => {
-      moveDrag(e.clientY);
-    },
-    [moveDrag]
-  );
+  // Set up event handler references
+  useEffect(() => {
+    dragMoveRef.current = (e: MouseEvent) => moveDrag(e.clientY);
 
-  const onTouchMove = useCallback(
-    (e: TouchEvent) => {
-      e.preventDefault(); // Prevent scrolling while dragging
-      moveDrag(e.touches[0].clientY);
-    },
-    [moveDrag]
-  );
+    dragEndRef.current = () => {
+      document.removeEventListener("mousemove", dragMoveRef.current!);
+      document.removeEventListener("mouseup", dragEndRef.current!);
+      endDrag();
+    };
 
-  const endDrag = useCallback(() => {
-    dragStart.current = null;
-    document.body.style.cursor = "";
-  }, []);
-
-  const onDragEnd = useCallback(() => {
-    document.removeEventListener("mousemove", onDragMove);
-    document.removeEventListener("mouseup", onDragEnd);
-    endDrag();
-  }, [endDrag, onDragMove]);
-
-  const onTouchEnd = useCallback(() => {
-    document.removeEventListener("touchmove", onTouchMove);
-    document.removeEventListener("touchend", onTouchEnd);
-    endDrag();
-  }, [endDrag, onTouchMove]);
-
-  // Use passive event handlers for better touch performance
-  const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    touchMoveRef.current = (e: TouchEvent) => {
       e.preventDefault();
-      if (input.trim() && !awaitingResponse) {
-        onFormSubmit(e);
+      moveDrag(e.touches[0].clientY);
+    };
+
+    touchEndRef.current = () => {
+      document.removeEventListener("touchmove", touchMoveRef.current!);
+      document.removeEventListener("touchend", touchEndRef.current!);
+      endDrag();
+    };
+  }, [moveDrag, endDrag]);
+
+  const startDrag = useCallback(
+    (clientY: number) => {
+      dragStart.current = clientY;
+      startHeight.current = textareaHeight;
+      document.body.style.cursor = "ns-resize";
+    },
+    [textareaHeight]
+  );
+
+  const onDragStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      startDrag(e.clientY);
+      if (dragMoveRef.current && dragEndRef.current) {
+        document.addEventListener("mousemove", dragMoveRef.current);
+        document.addEventListener("mouseup", dragEndRef.current);
       }
     },
-    [input, awaitingResponse, onFormSubmit]
+    [startDrag]
+  );
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      startDrag(e.touches[0].clientY);
+      if (touchMoveRef.current && touchEndRef.current) {
+        document.addEventListener("touchmove", touchMoveRef.current);
+        document.addEventListener("touchend", touchEndRef.current);
+      }
+    },
+    [startDrag]
   );
 
   return (

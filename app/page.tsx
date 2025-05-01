@@ -228,7 +228,7 @@ function ActiveChatLayout({
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [allMessages]);
+  }, [allMessages, messagesEndRef]);
 
   return (
     <motion.div
@@ -589,77 +589,11 @@ function InputArea({
   // Use the provided ref or fall back to our internal ref
   const textareaRefToUse = textareaRef || internalRef;
 
-  const startDrag = useCallback(
-    (clientY: number) => {
-      dragStart.current = clientY;
-      startHeight.current = textareaHeight;
-      document.body.style.cursor = "ns-resize";
-    },
-    [textareaHeight]
-  );
-
-  const onDragStart = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      startDrag(e.clientY);
-      document.addEventListener("mousemove", onDragMove);
-      document.addEventListener("mouseup", onDragEnd);
-    },
-    [startDrag]
-  );
-
-  const onTouchStart = useCallback(
-    (e: React.TouchEvent<HTMLDivElement>) => {
-      startDrag(e.touches[0].clientY);
-      document.addEventListener("touchmove", onTouchMove);
-      document.addEventListener("touchend", onTouchEnd);
-    },
-    [startDrag]
-  );
-
-  const moveDrag = useCallback(
-    (clientY: number) => {
-      if (dragStart.current === null) return;
-      const delta = clientY - dragStart.current;
-      const newHeight = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight.current + delta)
-      );
-      setTextareaHeight(newHeight);
-    },
-    [maxHeight, minHeight]
-  );
-
-  const onDragMove = useCallback(
-    (e: MouseEvent) => {
-      moveDrag(e.clientY);
-    },
-    [moveDrag]
-  );
-
-  const onTouchMove = useCallback(
-    (e: TouchEvent) => {
-      e.preventDefault(); // Prevent scrolling while dragging
-      moveDrag(e.touches[0].clientY);
-    },
-    [moveDrag]
-  );
-
-  const endDrag = useCallback(() => {
-    dragStart.current = null;
-    document.body.style.cursor = "";
-  }, []);
-
-  const onDragEnd = useCallback(() => {
-    document.removeEventListener("mousemove", onDragMove);
-    document.removeEventListener("mouseup", onDragEnd);
-    endDrag();
-  }, [endDrag, onDragMove]);
-
-  const onTouchEnd = useCallback(() => {
-    document.removeEventListener("touchmove", onTouchMove);
-    document.removeEventListener("touchend", onTouchEnd);
-    endDrag();
-  }, [endDrag, onTouchMove]);
+  // Store function references to avoid circular dependencies
+  const dragMoveRef = useRef<((e: MouseEvent) => void) | null>(null);
+  const dragEndRef = useRef<(() => void) | null>(null);
+  const touchMoveRef = useRef<((e: TouchEvent) => void) | null>(null);
+  const touchEndRef = useRef<(() => void) | null>(null);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -684,6 +618,78 @@ function InputArea({
       }
     },
     [input, awaitingResponse, onFormSubmit]
+  );
+
+  const endDrag = useCallback(() => {
+    dragStart.current = null;
+    document.body.style.cursor = "";
+  }, []);
+
+  const moveDrag = useCallback(
+    (clientY: number) => {
+      if (dragStart.current === null) return;
+      const delta = clientY - dragStart.current;
+      const newHeight = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight.current + delta)
+      );
+      setTextareaHeight(newHeight);
+    },
+    [maxHeight, minHeight]
+  );
+
+  // Setup refs in useEffect
+  useEffect(() => {
+    dragMoveRef.current = (e: MouseEvent) => moveDrag(e.clientY);
+    dragEndRef.current = () => {
+      if (dragMoveRef.current)
+        document.removeEventListener("mousemove", dragMoveRef.current);
+      if (dragEndRef.current)
+        document.removeEventListener("mouseup", dragEndRef.current);
+      endDrag();
+    };
+    touchMoveRef.current = (e: TouchEvent) => {
+      e.preventDefault();
+      moveDrag(e.touches[0].clientY);
+    };
+    touchEndRef.current = () => {
+      if (touchMoveRef.current)
+        document.removeEventListener("touchmove", touchMoveRef.current);
+      if (touchEndRef.current)
+        document.removeEventListener("touchend", touchEndRef.current);
+      endDrag();
+    };
+  }, [moveDrag, endDrag]);
+
+  const startDrag = useCallback(
+    (clientY: number) => {
+      dragStart.current = clientY;
+      startHeight.current = textareaHeight;
+      document.body.style.cursor = "ns-resize";
+    },
+    [textareaHeight]
+  );
+
+  const onDragStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      startDrag(e.clientY);
+      if (dragMoveRef.current)
+        document.addEventListener("mousemove", dragMoveRef.current);
+      if (dragEndRef.current)
+        document.addEventListener("mouseup", dragEndRef.current);
+    },
+    [startDrag]
+  );
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      startDrag(e.touches[0].clientY);
+      if (touchMoveRef.current)
+        document.addEventListener("touchmove", touchMoveRef.current);
+      if (touchEndRef.current)
+        document.addEventListener("touchend", touchEndRef.current);
+    },
+    [startDrag]
   );
 
   return (

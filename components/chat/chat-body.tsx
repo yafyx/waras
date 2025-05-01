@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState, useCallback } from "react";
 import { InfoBoxes } from "@/components/info-boxes";
 import { BlurFade } from "@/components/ui/blur-fade";
 
@@ -74,14 +74,14 @@ export const ChatBody = memo(function ChatBody({
   messagesEndRef,
 }: ChatBodyProps) {
   // Function to scroll to bottom
-  const scrollToBottom = (immediate = false) => {
+  const scrollToBottom = useCallback((immediate = false) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
         behavior: immediate ? "auto" : "smooth",
         block: "end",
       });
     }
-  };
+  }, [messagesEndRef]);
 
   // Track if this is the initial mount
   const isInitialMount = useRef(true);
@@ -115,7 +115,7 @@ export const ChatBody = memo(function ChatBody({
         }
       }
     }
-  }, [allMessages.length]);
+  }, [allMessages.length, scrollToBottom]);
 
   // Use ResizeObserver to handle images or dynamic content
   useEffect(() => {
@@ -145,7 +145,7 @@ export const ChatBody = memo(function ChatBody({
         resizeObserverRef.current.disconnect();
       }
     };
-  }, [allMessages.length, messagesEndRef]);
+  }, [allMessages.length, messagesEndRef, scrollToBottom]);
 
   return (
     <div className="flex flex-col h-full">
