@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Search, Trash2, X } from "lucide-react";
+import { Search, Trash2, X, Trash } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { id } from "date-fns/locale";
 import {
@@ -32,6 +32,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [chatList, setChatList] = useState<ChatInfo[]>([]);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
+  const [isDeleteAllConfirmOpen, setIsDeleteAllConfirmOpen] = useState(false);
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dialogTitleRef = useRef<HTMLDivElement>(null);
@@ -153,6 +154,37 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
     setChatToDelete(null);
   };
 
+  const handleDeleteAllChats = () => {
+    setIsDeleteAllConfirmOpen(true);
+  };
+
+  const confirmDeleteAllChats = () => {
+    try {
+      // Get all chat keys and delete them
+      const chatKeys = Object.keys(localStorage).filter((key) =>
+        key.startsWith("chat-")
+      );
+
+      chatKeys.forEach((key) => {
+        localStorage.removeItem(key);
+      });
+
+      // Refresh the chat list
+      loadChatList();
+      setIsDeleteAllConfirmOpen(false);
+      toast("Semua chat telah dihapus");
+    } catch (error) {
+      console.error("Failed to delete all chats:", error);
+      toast("Gagal menghapus semua chat");
+    }
+  };
+
+  const cancelDeleteAllChats = () => {
+    setIsDeleteAllConfirmOpen(false);
+  };
+
+  const totalChats = Object.values(groupedChats).flat().length;
+
   return (
     <Credenza open={isOpen} onOpenChange={setIsOpen}>
       <CredenzaTrigger asChild>
@@ -248,73 +280,89 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
               )}
             </div>
           ) : (
-            <div className="h-full overflow-y-auto custom-scrollbar">
-              <div className="p-3 space-y-5">
-                {Object.entries(groupedChats).map(([dateGroup, chats]) => (
-                  <div key={dateGroup} className="space-y-0 pt-0">
-                    <div className="sticky top-0 z-10 bg-neutral-900/95 backdrop-blur-sm py-1 px-1 mt-0">
-                      <h3 className="text-xs font-medium text-neutral-500 tracking-wider">
-                        {dateGroup}
-                        <span className="ml-2 text-xs bg-neutral-800 text-neutral-400 rounded-full px-2 py-0.5">
-                          {chats.length}
-                        </span>
-                      </h3>
-                    </div>
-                    {chats.map((chat, index) => (
-                      <div
-                        key={chat.id}
-                        className={cn(
-                          "transform transition-all duration-300 ease-out mb-2",
-                          index > 0 && "mt-2" // Added gap between items
-                        )}
-                        style={{
-                          zIndex: chats.length - index,
-                        }}
-                        onMouseEnter={() => setHoveredChatId(chat.id)}
-                        onMouseLeave={() => setHoveredChatId(null)}
-                      >
-                        <Link
-                          href={`/chat/${chat.id}`}
-                          className="block relative group bg-neutral-800/40 hover:bg-neutral-800/80 border border-neutral-700/50 hover:border-neutral-700 rounded-xl px-4 py-3.5 transition-all duration-200 hover:no-underline shadow-sm hover:shadow-md"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1 min-w-0">
-                              <p className="line-clamp-2 text-sm font-medium text-neutral-200 group-hover:text-white transition-colors duration-200">
-                                {chat.firstMessage}
-                              </p>
-                              <p className="text-xs text-neutral-500 mt-2">
-                                {chat.timestamp &&
-                                  format(new Date(chat.timestamp), "HH:mm", {
-                                    locale: id,
-                                  })}
-                              </p>
-                            </div>
-                            <div
-                              className={cn(
-                                "opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2",
-                                hoveredChatId === chat.id && "opacity-100"
-                              )}
-                            >
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-full hover:bg-neutral-700 hover:text-red-400 transition-all duration-200 cursor-pointer"
-                                title="Hapus Chat"
-                                onClick={(e) => handleDeleteChat(e, chat.id)}
-                                aria-label="Hapus chat ini"
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </Link>
+            <>
+              {/* Delete All Chats button - shown only when there are chats and no search */}
+              {!searchQuery && totalChats > 0 && (
+                <div className="flex justify-end px-3 pt-3 pb-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDeleteAllChats}
+                    className="text-xs text-neutral-500 hover:text-red-400 hover:bg-neutral-800/50 gap-1.5 py-1 h-auto"
+                  >
+                    <Trash className="size-3.5" />
+                    Hapus semua chat
+                  </Button>
+                </div>
+              )}
+              <div className="h-full overflow-y-auto custom-scrollbar">
+                <div className="p-3 space-y-5">
+                  {Object.entries(groupedChats).map(([dateGroup, chats]) => (
+                    <div key={dateGroup} className="space-y-0 pt-0">
+                      <div className="sticky top-0 z-10 bg-neutral-900/95 backdrop-blur-sm py-1 px-1 mt-0">
+                        <h3 className="text-xs font-medium text-neutral-500 tracking-wider">
+                          {dateGroup}
+                          <span className="ml-2 text-xs bg-neutral-800 text-neutral-400 rounded-full px-2 py-0.5">
+                            {chats.length}
+                          </span>
+                        </h3>
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      {chats.map((chat, index) => (
+                        <div
+                          key={chat.id}
+                          className={cn(
+                            "transform transition-all duration-300 ease-out mb-2",
+                            index > 0 && "mt-2" // Added gap between items
+                          )}
+                          style={{
+                            zIndex: chats.length - index,
+                          }}
+                          onMouseEnter={() => setHoveredChatId(chat.id)}
+                          onMouseLeave={() => setHoveredChatId(null)}
+                        >
+                          <Link
+                            href={`/chat/${chat.id}`}
+                            className="block relative group bg-neutral-800/40 hover:bg-neutral-800/80 border border-neutral-700/50 hover:border-neutral-700 rounded-xl px-4 py-3.5 transition-all duration-200 hover:no-underline shadow-sm hover:shadow-md"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 min-w-0">
+                                <p className="line-clamp-2 text-sm font-medium text-neutral-200 group-hover:text-white transition-colors duration-200">
+                                  {chat.firstMessage}
+                                </p>
+                                <p className="text-xs text-neutral-500 mt-2">
+                                  {chat.timestamp &&
+                                    format(new Date(chat.timestamp), "HH:mm", {
+                                      locale: id,
+                                    })}
+                                </p>
+                              </div>
+                              <div
+                                className={cn(
+                                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2",
+                                  hoveredChatId === chat.id && "opacity-100"
+                                )}
+                              >
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full hover:bg-neutral-700 hover:text-red-400 transition-all duration-200 cursor-pointer"
+                                  title="Hapus Chat"
+                                  onClick={(e) => handleDeleteChat(e, chat.id)}
+                                  aria-label="Hapus chat ini"
+                                >
+                                  <Trash2 className="size-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </CredenzaBody>
 
@@ -342,6 +390,36 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   Hapus
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isDeleteAllConfirmOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+            <div className="bg-neutral-900 p-4 rounded-lg shadow-lg max-w-[300px] w-full text-center space-y-4 border border-neutral-800">
+              <h3 className="font-medium text-white">Hapus Semua Chat</h3>
+              <p className="text-sm text-neutral-400">
+                Yakin ingin menghapus semua chat? Tindakan ini tidak dapat
+                dibatalkan dan akan menghapus semua riwayat percakapan.
+              </p>
+              <div className="flex justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={cancelDeleteAllChats}
+                  className="border-neutral-700 bg-transparent hover:bg-neutral-800 text-neutral-300"
+                >
+                  Batal
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={confirmDeleteAllChats}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Hapus Semua
                 </Button>
               </div>
             </div>
