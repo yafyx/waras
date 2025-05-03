@@ -3,7 +3,7 @@
 import { timeAgo } from "@/lib/utils";
 import type { Message, ToolCall } from "ai";
 import { motion } from "framer-motion";
-import { Copy, Check, ChevronDown } from "lucide-react";
+import { Copy, Check, ChevronDown, BookOpen, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeSlug from "rehype-slug";
@@ -17,6 +17,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MessageItemProps {
   message: Message;
@@ -67,43 +74,78 @@ const MarkdownContent = memo(({ content }: { content: string }) => {
       </ReactMarkdown>
 
       {hasSources && (
-        <div className="mt-6 border-t border-neutral-700/50 text-neutral-400 text-xs">
+        <div className="mt-6 border-t border-neutral-700/50 pt-2">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="sources" className="border-b-0">
-              <AccordionTrigger className="flex items-center gap-2 py-2 text-xs hover:text-white transition-colors duration-200 hover:no-underline font-medium group cursor-pointer">
-                <span className="group-hover:text-white transition-colors duration-200">
-                  Referensi & Sumber Informasi
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="pb-1">
-                <div className="hover:border-neutral-400 transition-colors duration-200 text-xs">
-                  <div className="hover:text-neutral-300 transition-colors duration-200">
-                    <ReactMarkdown
-                      rehypePlugins={[
-                        [
-                          rehypeExternalLinks,
-                          {
-                            target: "_blank",
-                            rel: ["nofollow", "noopener", "noreferrer"],
-                            properties: {
-                              className:
-                                "text-blue-400 hover:text-blue-300 transition-colors duration-200 hover:underline",
-                            },
-                          },
-                        ],
-                        [
-                          rehypeClassNames,
-                          {
-                            li: "mb-2 hover:text-neutral-200 transition-colors duration-200",
-                            p: "mb-2 hover:text-neutral-200 transition-colors duration-200",
-                            a: "text-blue-400 hover:text-blue-300 transition-colors duration-200 hover:underline",
-                          },
-                        ],
-                      ]}
+              <AccordionTrigger className="flex items-center gap-2 py-2 text-sm hover:text-white transition-colors duration-200 hover:no-underline font-medium group cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-neutral-400 group-hover:text-blue-400 transition-colors duration-200" />
+                  <span className="group-hover:text-white transition-colors duration-200 flex items-center gap-2">
+                    Referensi & Sumber Informasi
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] py-0 px-2 font-normal bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50 transition-colors duration-200"
                     >
-                      {sourcesContent}
-                    </ReactMarkdown>
-                  </div>
+                      {
+                        sourcesContent
+                          .split(/\n/)
+                          .filter((line) => line.trim().length > 0).length
+                      }{" "}
+                      sumber
+                    </Badge>
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-1 pt-2 pl-6 border-l-2 border-neutral-700/50">
+                <div className="text-xs space-y-2">
+                  <ReactMarkdown
+                    rehypePlugins={[
+                      [
+                        rehypeExternalLinks,
+                        {
+                          target: "_blank",
+                          rel: ["nofollow", "noopener", "noreferrer"],
+                          properties: {
+                            className:
+                              "text-blue-400 hover:text-blue-300 transition-colors duration-200 hover:underline flex items-center gap-1 group",
+                          },
+                        },
+                      ],
+                      [
+                        rehypeClassNames,
+                        {
+                          li: "mb-3 hover:text-neutral-200 transition-colors duration-200 relative pl-1",
+                          p: "mb-2 hover:text-neutral-200 transition-colors duration-200",
+                          a: "text-blue-400 hover:text-blue-300 transition-colors duration-200 hover:underline inline-flex items-center gap-1",
+                          ul: "space-y-2 list-none pl-0",
+                        },
+                      ],
+                    ]}
+                    components={{
+                      a: ({ node, ...props }) => (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <a {...props}>
+                                {props.children}
+                                <ExternalLink className="h-3 w-3 opacity-70 group-hover:opacity-100 transition-opacity duration-200" />
+                              </a>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              <p>Buka di tab baru</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li className="mb-3 hover:text-neutral-200 transition-colors duration-200 relative pl-1">
+                          {props.children}
+                        </li>
+                      ),
+                    }}
+                  >
+                    {sourcesContent}
+                  </ReactMarkdown>
                 </div>
               </AccordionContent>
             </AccordionItem>
