@@ -114,10 +114,7 @@ function InitialLayout({
   return (
     <div className="min-h-screen bg-neutral-900">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
-      <Spotlight
-        className="fixed top-[-10%] md:top-[-30%] left-0 right-0 mx-auto w-[150%] md:w-full max-w-7xl z-0"
-        fill="white"
-      />
+      <Spotlight />
       <motion.div
         key="initial-layout"
         initial={{ opacity: 0, scale: 0.95 }}
