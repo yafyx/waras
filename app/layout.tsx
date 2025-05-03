@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Serif } from "next/font/google";
 import { Providers } from "./providers";
+import { FloatingButton } from "@/components/ui/floating-button";
 
 import "./globals.css";
 
@@ -30,7 +31,10 @@ export default function RootLayout({
       style={{ colorScheme: "dark" }}
     >
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <FloatingButton />
+        </Providers>
       </body>
     </html>
   );

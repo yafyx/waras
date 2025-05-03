@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Loading } from "@/components/chat";
+import { GalleryVerticalEnd } from "lucide-react";
 
 interface ChatMessage {
   role: string;
@@ -221,7 +222,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                     alt="Waras AI Logo"
                     width={20}
                     height={20}
-                    className="select-none mr-2"
+                    className="select-none mr-2 text-white"
                     draggable="false"
                   />
                   Beranda
@@ -232,7 +233,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                 asChild
               >
                 <Link href="/chat" onClick={handleNewChat}>
-                  <Plus className="size-6 mr-2" />
+                  <Plus className="size-6 mr-2 text-white" />
                   Chat Baru
                 </Link>
               </DropdownMenuItem>
@@ -241,8 +242,11 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                 asChild
               >
                 <Link href="/grid">
-                  <Grid2X2 className="size-6 mr-2" />
-                  Grid
+                  <GalleryVerticalEnd
+                    className="size-6 mr-2 text-white"
+                    fill="white"
+                  />
+                  History
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
