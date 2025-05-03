@@ -201,7 +201,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                     Tidak ditemukan
                   </p>
                   <p className="text-xs text-neutral-500 max-w-[220px] mb-4">
-                    Tidak ada chat yang cocok dengan "{searchQuery}"
+                    Tidak ada chat yang cocok dengan &quot;{searchQuery}&quot;
                   </p>
                   <Button
                     variant="outline"
