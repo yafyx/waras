@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, Trash2, X } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { id } from "date-fns/locale";
@@ -33,11 +33,28 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
   const [chatList, setChatList] = useState<ChatInfo[]>([]);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const dialogTitleRef = useRef<HTMLDivElement>(null);
 
   // Load chat list when opened
   useEffect(() => {
     if (isOpen) {
       loadChatList();
+
+      // Ensure search input doesn't get focus
+      if (
+        searchInputRef.current &&
+        document.activeElement === searchInputRef.current
+      ) {
+        searchInputRef.current.blur();
+      }
+
+      // Set focus on the dialog title or container instead
+      setTimeout(() => {
+        if (dialogTitleRef.current) {
+          dialogTitleRef.current.focus();
+        }
+      }, 0);
     }
   }, [isOpen]);
 
@@ -153,17 +170,23 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
       </CredenzaTrigger>
       <CredenzaContent className="bg-neutral-900 border-neutral-800 p-0 overflow-hidden rounded-2xl">
         <CredenzaTitle>
-          <div className="p-3 border-b border-neutral-800">
+          <div
+            className="p-3 border-b border-neutral-800"
+            ref={dialogTitleRef}
+            tabIndex={-1}
+          >
             <div className="flex items-center w-full rounded-lg relative">
               <div className="flex items-center justify-center pl-2.5 pr-1">
-                <Image
-                  src="/waras.png"
-                  alt="Waras AI Logo"
-                  width={24}
-                  height={24}
-                  className="select-none"
-                  draggable="false"
-                />
+                <Link href="/">
+                  <Image
+                    src="/waras.png"
+                    alt="Waras AI Logo"
+                    width={24}
+                    height={24}
+                    className="select-none"
+                    draggable="false"
+                  />
+                </Link>
               </div>
               <input
                 type="text"
@@ -172,6 +195,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full py-2 pl-1 pr-4 text-sm placeholder:text-neutral-500 focus:outline-none transition-all duration-200"
                 aria-label="Cari dalam daftar chat"
+                ref={searchInputRef}
               />
               {searchQuery && (
                 <Button
@@ -279,7 +303,6 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                                 title="Hapus Chat"
                                 onClick={(e) => handleDeleteChat(e, chat.id)}
                                 aria-label="Hapus chat ini"
-                                tabIndex={0}
                               >
                                 <Trash2 className="size-4" />
                               </Button>
