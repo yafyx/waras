@@ -139,36 +139,39 @@ export function InfoBoxes() {
     <>
       {/* Mobile View: Accordion */}
       <div className="md:hidden w-full">
-        <div className="mx-auto w-full max-w-md rounded-xl border border-neutral-800/80 bg-gradient-to-br from-neutral-900 to-neutral-950 overflow-hidden">
-          <Accordion type="single" collapsible className="w-full">
-            {infoItems.map((item) => (
-              <AccordionItem
-                key={item.id}
-                value={item.id}
-                className="border-b border-neutral-800/50 last:border-b-0"
-              >
-                <AccordionTrigger className="hover:no-underline py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        "flex items-center justify-center p-2 rounded-lg",
-                        item.iconBgClass
-                      )}
-                    >
-                      {item.icon}
-                    </div>
-                    <span className="text-neutral-100">{item.title}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4">
-                  <div className="text-sm text-neutral-400">
-                    {item.description}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
+        <BlurFade direction="up" delay={0.1}>
+          <div className="mx-auto w-full max-w-md rounded-xl border border-neutral-800/80 bg-gradient-to-br from-neutral-900 to-neutral-950 overflow-hidden">
+            <Accordion type="single" collapsible className="w-full">
+              {infoItems.map((item) => (
+                <BlurFade key={item.id} direction="up" delay={item.delay}>
+                  <AccordionItem
+                    value={item.id}
+                    className="border-b border-neutral-800/50 last:border-b-0"
+                  >
+                    <AccordionTrigger className="hover:no-underline py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={cn(
+                            "flex items-center justify-center p-2 rounded-lg",
+                            item.iconBgClass
+                          )}
+                        >
+                          {item.icon}
+                        </div>
+                        <span className="text-neutral-100">{item.title}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4">
+                      <div className="text-sm text-neutral-400">
+                        {item.description}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </BlurFade>
+              ))}
+            </Accordion>
+          </div>
+        </BlurFade>
       </div>
 
       {/* Desktop View: Cards */}
