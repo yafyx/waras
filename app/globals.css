@@ -307,3 +307,18 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* Vaul Drawer Wrapper Styling */
+[vaul-drawer-wrapper],
+[data-vaul-drawer-wrapper] {
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Fix for black background on drawer open */
+body {
+  background-color: var(--background) !important;
+}

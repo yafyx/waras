@@ -33,8 +33,12 @@ export default function RootLayout({
     >
       <body>
         <Providers>
-          {children}
-          <FloatingButton />
+          <div vaul-drawer-wrapper="" data-vaul-drawer-wrapper="">
+            <div className="relative flex min-h-screen flex-col bg-background">
+              {children}
+              <FloatingButton />
+            </div>
+          </div>
           <GlobalStyle />
         </Providers>
       </body>
