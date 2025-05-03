@@ -47,9 +47,7 @@ const EmptyState = memo(function EmptyState() {
         </BlurFade>
 
         {/* Info Boxes */}
-        <BlurFade direction="up" delay={0.2}>
-          <InfoBoxes />
-        </BlurFade>
+        <InfoBoxes />
       </div>
     </div>
   );
@@ -74,14 +72,17 @@ export const ChatBody = memo(function ChatBody({
   messagesEndRef,
 }: ChatBodyProps) {
   // Function to scroll to bottom
-  const scrollToBottom = useCallback((immediate = false) => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
-        behavior: immediate ? "auto" : "smooth",
-        block: "end",
-      });
-    }
-  }, [messagesEndRef]);
+  const scrollToBottom = useCallback(
+    (immediate = false) => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({
+          behavior: immediate ? "auto" : "smooth",
+          block: "end",
+        });
+      }
+    },
+    [messagesEndRef]
+  );
 
   // Track if this is the initial mount
   const isInitialMount = useRef(true);
