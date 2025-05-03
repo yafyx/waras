@@ -1,5 +1,5 @@
 import { EmbeddingMetadata, findRelevantContent } from "@/lib/ai/embedding";
-import { chat } from "@/lib/ai/prompts";
+import { systemPrompts } from "@/lib/ai/prompts";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToCoreMessages, generateObject, streamText, tool } from "ai";
 import { z } from "zod";
@@ -25,6 +25,17 @@ function errorHandler(error: unknown) {
   }
 
   return JSON.stringify(error);
+}
+
+function isValidUrl(urlString: string | null | undefined): boolean {
+  if (!urlString) return false;
+
+  try {
+    const url = new URL(urlString);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 // Function to implement exponential backoff for retries
@@ -63,14 +74,13 @@ async function withRetry<T>(
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  // Wrap streamText in retry logic
   const streamTextWithRetry = () =>
     streamText({
       model: google("gemini-2.0-flash"),
       messages: convertToCoreMessages(messages),
       maxTokens: 4096,
       toolCallStreaming: true,
-      system: chat,
+      system: systemPrompts,
       tools: {
         getInformation: tool({
           description: `get information from your knowledge base to answer questions.`,
@@ -95,12 +105,16 @@ export async function POST(req: Request) {
               // Safely cast metadata to EmbeddingMetadata type or empty object
               const metadata = (result.metadata as EmbeddingMetadata) || {};
 
+              // Validate URL to prevent hallucinations
+              const url = isValidUrl(metadata.url) ? metadata.url : null;
+
               const formattedResult = {
                 content: result.name,
                 similarity: result.similarity,
                 title: metadata.title || "Untitled Source",
-                url: metadata.url || null,
-                source: metadata.source || null
+                url,
+                source: metadata.source || null,
+                hasValidSource: Boolean(metadata.title && (url || metadata.source))
               };
               return formattedResult;
             });
@@ -135,7 +149,7 @@ export async function POST(req: Request) {
             });
           },
         }),
-      },
+      }
     });
 
   try {
