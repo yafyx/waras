@@ -21,6 +21,7 @@ import {
 } from "@/lib/chat-storage";
 import { toast } from "sonner";
 import { useOptimistic } from "react";
+import { Spotlight } from "@/components/ui/spotlight";
 
 // Animation variants
 const variants = {

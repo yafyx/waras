@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loading } from "@/components/chat";
 import { GalleryVerticalEnd } from "lucide-react";
+import { RiwayatCredenza } from "@/components/riwayat";
 
 interface ChatMessage {
   role: string;
@@ -62,48 +63,8 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [localChatList, setLocalChatList] = useState<ChatInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-  // Load chats on mount and when storage changes
-  useEffect(() => {
-    const loadChats = () => {
-      try {
-        setIsLoading(true);
-        const chats = getAllChatsFromLocalStorage();
-        setLocalChatList(chats);
-      } catch (error) {
-        console.error("Error loading chat list:", error);
-        toast("Gagal memuat daftar obrolan");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Initial load
-    loadChats();
-
-    // Listen for refresh events
-    const refreshHandler = () => {
-      loadChats();
-    };
-    window.addEventListener("waras:refreshChatList", refreshHandler);
-
-    // Listen for storage events from other tabs
-    const storageHandler = (e: StorageEvent) => {
-      if (e.key === null || e.key.startsWith("chat-")) {
-        loadChats();
-      }
-    };
-    window.addEventListener("storage", storageHandler);
-
-    return () => {
-      window.removeEventListener("waras:refreshChatList", refreshHandler);
-      window.removeEventListener("storage", storageHandler);
-    };
-  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -119,8 +80,8 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
-  // Determine which list to use - either the prop or our local state
-  const effectiveChatList = chatList.length > 0 ? chatList : localChatList;
+  // Use the chatList prop directly
+  const effectiveChatList = chatList;
 
   const filteredChats = searchQuery.trim()
     ? effectiveChatList.filter((chat) =>
@@ -213,41 +174,52 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
             >
               <DropdownMenuItem
-                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
+                className="flex items-center rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
                 asChild
               >
                 <Link href="/">
-                  <Image
-                    src="/waras.png"
-                    alt="Waras AI Logo"
-                    width={20}
-                    height={20}
-                    className="select-none mr-2 text-white"
-                    draggable="false"
-                  />
-                  Beranda
+                  <div className="flex items-center w-full">
+                    <Image
+                      src="/waras.png"
+                      alt="Waras AI Logo"
+                      width={20}
+                      height={20}
+                      className="select-none mr-3 text-white"
+                      draggable="false"
+                    />
+                    Beranda
+                  </div>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
+                className="flex items-center rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
                 asChild
               >
                 <Link href="/chat" onClick={handleNewChat}>
-                  <Plus className="size-6 mr-2 text-white" />
-                  Chat Baru
+                  <div className="flex items-center w-full">
+                    <Plus className="size-6 mr-3 text-white" />
+                    Chat Baru
+                  </div>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="flex items-center gap-3 rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer"
-                asChild
+                className="flex items-center rounded-xl px-5 py-2 text-lg hover:bg-neutral-800 cursor-pointer p-0 overflow-hidden"
+                onSelect={(e) => {
+                  // Prevent the dropdown menu from closing when this item is clicked
+                  e.preventDefault();
+                }}
               >
-                <Link href="/grid">
-                  <GalleryVerticalEnd
-                    className="size-6 mr-2 text-white"
-                    fill="white"
-                  />
-                  History
-                </Link>
+                <RiwayatCredenza
+                  trigger={
+                    <div className="flex w-full items-center cursor-pointer px-5 py-2">
+                      <GalleryVerticalEnd
+                        className="size-6 mr-3 text-white"
+                        fill="white"
+                      />
+                      Riwayat
+                    </div>
+                  }
+                />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -298,74 +270,121 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
           </div>
 
           <div className="flex-grow overflow-y-auto px-3 pb-3 pt-0 custom-scrollbar">
-            {isLoading ? (
-              <div className="py-4">
-                <Loading tool="getInformation" />
+            {filteredChats.length === 0 && !searchQuery ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in-50 duration-300">
+                <div className="flex items-center justify-center size-14 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 mb-3 shadow-inner">
+                  <Lock className="size-6 text-neutral-400" strokeWidth={1.5} />
+                </div>
+                <p className="text-sm font-medium mb-1 text-neutral-300">
+                  Belum ada riwayat Chat
+                </p>
+                <p className="text-xs text-neutral-500 max-w-[220px] mb-4">
+                  Mulai Chat baru untuk percakapan pribadi dengan Waras AI
+                </p>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-xs bg-transparent border-neutral-700 hover:bg-neutral-800 text-neutral-300 cursor-pointer"
+                >
+                  <Link href="/chat" onClick={handleNewChat}>
+                    <Plus className="size-3" />
+                    Mulai Chat Baru
+                  </Link>
+                </Button>
+              </div>
+            ) : filteredChats.length === 0 && searchQuery ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in-50 duration-300">
+                <Search
+                  className="size-8 text-neutral-600 mb-3"
+                  strokeWidth={1.5}
+                />
+                <p className="text-sm text-neutral-400 font-medium">
+                  Tidak ditemukan
+                </p>
+                <p className="text-xs text-neutral-500 mt-1 mb-3">
+                  Tidak ada Chat yang cocok dengan &quot;{searchQuery}
+                  &quot;
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="text-xs text-neutral-300 bg-neutral-800 hover:bg-neutral-700 cursor-pointer"
+                >
+                  Hapus pencarian
+                </Button>
               </div>
             ) : (
               <>
-                {filteredChats.length > 0 && (
-                  <div className="flex items-center justify-between sticky top-0 bg-neutral-900 py-2 z-10">
-                    <h5 className="px-1 text-neutral-400 text-sm font-medium tracking-tight">
-                      Chat Terbaru
-                    </h5>
-                    {filteredChats.length > 0 && (
-                      <span className="text-xs text-neutral-500 px-1 bg-neutral-800 rounded-full">
-                        {filteredChats.length}
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="flex items-center justify-between sticky top-0 bg-neutral-900 py-2 z-10">
+                  <h5 className="px-1 text-neutral-400 text-sm font-medium tracking-tight">
+                    Chat Terbaru
+                  </h5>
+                  {filteredChats.length > 0 && (
+                    <span className="text-xs text-neutral-500 px-1 bg-neutral-800 rounded-full">
+                      {filteredChats.length}
+                    </span>
+                  )}
+                </div>
                 <div className="mt-1 flex flex-col gap-1.5">
                   {filteredChats.length > 0 ? (
-                    filteredChats.map((chat) => (
-                      <div
-                        key={chat.id}
-                        className="relative group"
-                        onMouseEnter={() => setHoveredChatId(chat.id)}
-                        onMouseLeave={() => setHoveredChatId(null)}
-                      >
-                        <Link
-                          href={`/chat/${chat.id}`}
-                          className={`flex flex-col items-start rounded-xl border px-3 py-2.5 transition-all duration-200 hover:bg-neutral-800/70 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 ${
-                            currentChatId === chat.id
-                              ? "border-neutral-700 bg-neutral-800 shadow-sm"
-                              : "border-transparent"
-                          }`}
-                          aria-current={
-                            currentChatId === chat.id ? "page" : undefined
-                          }
+                    filteredChats
+                      .sort((a, b) => {
+                        const dateA = new Date(a.timestamp || 0).getTime();
+                        const dateB = new Date(b.timestamp || 0).getTime();
+                        return dateB - dateA;
+                      })
+                      .map((chat) => (
+                        <div
+                          key={chat.id}
+                          className="relative group"
+                          onMouseEnter={() => setHoveredChatId(chat.id)}
+                          onMouseLeave={() => setHoveredChatId(null)}
                         >
-                          <div className="w-full flex justify-between items-start">
-                            <p className="line-clamp-1 text-sm font-medium group-hover:text-white transition-colors duration-200 pr-5 max-w-[200px]">
-                              {chat.firstMessage}
-                            </p>
-                          </div>
-                          <div className="w-full flex justify-between items-center mt-1">
-                            <p className="text-xs text-neutral-500 flex items-center">
-                              {timeAgo(chat.timestamp)}
-                            </p>
-                            <div className="flex items-center gap-1 absolute right-3 top-1/2 -translate-y-1/2">
-                              {(hoveredChatId === chat.id ||
-                                currentChatId === chat.id) && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 rounded-full hover:bg-neutral-700 hover:text-red-400 transition-all duration-200 cursor-pointer"
-                                  title="Hapus Chat"
-                                  onClick={(e) => handleDeleteChat(e, chat.id)}
-                                  aria-label="Hapus chat ini"
-                                  tabIndex={0}
-                                >
-                                  <Trash2 className="size-3" />
-                                </Button>
-                              )}
+                          <Link
+                            href={`/chat/${chat.id}`}
+                            className={`flex flex-col items-start rounded-xl border px-3 py-2.5 transition-all duration-200 hover:bg-neutral-800/70 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 ${
+                              currentChatId === chat.id
+                                ? "border-neutral-700 bg-neutral-800 shadow-sm"
+                                : "border-transparent"
+                            }`}
+                            aria-current={
+                              currentChatId === chat.id ? "page" : undefined
+                            }
+                          >
+                            <div className="w-full flex justify-between items-start">
+                              <p className="line-clamp-1 text-sm font-medium group-hover:text-white transition-colors duration-200 pr-5 max-w-[200px]">
+                                {chat.firstMessage}
+                              </p>
                             </div>
-                          </div>
-                        </Link>
-                      </div>
-                    ))
-                  ) : searchQuery ? (
+                            <div className="w-full flex justify-between items-center mt-1">
+                              <p className="text-xs text-neutral-500 flex items-center">
+                                {timeAgo(chat.timestamp)}
+                              </p>
+                              <div className="flex items-center gap-1 absolute right-3 top-1/2 -translate-y-1/2">
+                                {(hoveredChatId === chat.id ||
+                                  currentChatId === chat.id) && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 rounded-full hover:bg-neutral-700 hover:text-red-400 transition-all duration-200 cursor-pointer"
+                                    title="Hapus Chat"
+                                    onClick={(e) =>
+                                      handleDeleteChat(e, chat.id)
+                                    }
+                                    aria-label="Hapus chat ini"
+                                    tabIndex={0}
+                                  >
+                                    <Trash2 className="size-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
+                      ))
+                  ) : (
                     <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in-50 duration-300">
                       <Search
                         className="size-8 text-neutral-600 mb-3"
@@ -385,32 +404,6 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
                         className="text-xs text-neutral-300 bg-neutral-800 hover:bg-neutral-700 cursor-pointer"
                       >
                         Hapus pencarian
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in-50 duration-300">
-                      <div className="flex items-center justify-center size-14 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 mb-3 shadow-inner">
-                        <Lock
-                          className="size-6 text-neutral-400"
-                          strokeWidth={1.5}
-                        />
-                      </div>
-                      <p className="text-sm font-medium mb-1 text-neutral-300">
-                        Belum ada riwayat Chat
-                      </p>
-                      <p className="text-xs text-neutral-500 max-w-[220px] mb-4">
-                        Mulai Chat baru untuk percakapan pribadi dengan Waras AI
-                      </p>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 text-xs bg-transparent border-neutral-700 hover:bg-neutral-800 text-neutral-300 cursor-pointer"
-                      >
-                        <Link href="/chat" onClick={handleNewChat}>
-                          <Plus className="size-3" />
-                          Mulai Chat Baru
-                        </Link>
                       </Button>
                     </div>
                   )}
