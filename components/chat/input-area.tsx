@@ -167,14 +167,14 @@ export const InputArea = memo(function InputArea({
             minHeight: `${minHeight}px`,
             maxHeight: `${maxHeight}px`,
           }}
-          className="flex w-full border border-neutral-700 bg-neutral-800/80 px-4 py-3 text-base text-neutral-100 shadow-md placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 overflow-y-auto pr-12 rounded-b-xl rounded-t-none"
+          className="flex w-full border border-neutral-700 bg-neutral-800/80 px-4 py-3 text-base text-neutral-100 shadow-md placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-500 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 overflow-y-auto pr-12 rounded-b-xl rounded-t-none"
         />
         <Button
           type="submit"
           size="icon"
           disabled={awaitingResponse || !input.trim() || input.trim() === ""}
           className={cn(
-            "absolute right-2 bottom-3 flex items-center justify-center rounded-full bg-white text-black transition-all duration-200 ease-in-out hover:scale-110 disabled:bg-neutral-600 disabled:opacity-50 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 active:bg-white active:text-neutral-900 active:transition-all active:duration-100",
+            "absolute right-2 bottom-3 flex items-center justify-center rounded-full bg-white text-black transition-all duration-200 ease-in-out hover:scale-110 disabled:bg-neutral-600 disabled:opacity-50 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-500 active:bg-white active:text-neutral-900 active:transition-all active:duration-100",
             "h-10 w-10 cursor-pointer"
           )}
         >

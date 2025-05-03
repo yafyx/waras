@@ -112,17 +112,10 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
-
-      // Ctrl/Cmd + N for new chat
-      if ((e.ctrlKey || e.metaKey) && e.key === "n") {
-        e.preventDefault();
-        handleNewChat();
-        router.push("/chat");
-      }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
   // Determine which list to use - either the prop or our local state
@@ -265,13 +258,10 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               <Link href="/chat">
                 <Plus className="size-4" />
                 <span>Chat Baru</span>
-                <kbd className="ml-auto hidden text-xs rounded border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-neutral-600 sm:inline-block">
-                  Ctrl+N
-                </kbd>
               </Link>
             </Button>
 
-            <div className="relative mt-3 mb-2">
+            <div className="relative mt-3">
               <div className="absolute left-2.5 top-2.5 text-neutral-500">
                 <Search className="size-4" />
               </div>
@@ -439,7 +429,7 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
               </div>
               <div className="space-y-2">
                 <p className="relative text-sm font-medium text-white/90">
-                  Privat, Permissionless, Aman.
+                  Privat, <em>Permissionless</em>, Aman.
                 </p>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-neutral-400">Waras AI v1.0</p>
