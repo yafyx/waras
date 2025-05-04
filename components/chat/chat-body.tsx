@@ -3,6 +3,7 @@
 import { Message } from "ai";
 import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { MessageItem } from "@/components/chat/message-item";
 import { Loading } from "@/components/chat/loading";
 import {
@@ -33,15 +34,17 @@ const EmptyState = memo(function EmptyState() {
         <BlurFade direction="up" delay={0.1}>
           <div className="flex items-center gap-3 justify-center mb-8">
             <div className="flex items-center justify-center h-[60px]">
-              <Image
-                src="/waras.png"
-                alt="Waras AI Logo"
-                width={55}
-                height={55}
-                className="select-none"
-                draggable="false"
-                priority
-              />
+              <Link href="/">
+                <Image
+                  src="/waras.png"
+                  alt="Waras AI Logo"
+                  width={55}
+                  height={55}
+                  className="select-none"
+                  draggable="false"
+                  priority
+                />
+              </Link>
             </div>
           </div>
         </BlurFade>
