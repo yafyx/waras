@@ -1,7 +1,7 @@
 import { EmbeddingMetadata, findRelevantContent } from "@/lib/ai/embedding";
 import { systemPrompts } from "@/lib/ai/prompts";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { convertToCoreMessages, generateObject, streamText, tool } from "ai";
+import { convertToCoreMessages, generateObject, smoothStream, streamText, tool } from "ai";
 import { z } from "zod";
 
 export const maxDuration = 60;
@@ -81,6 +81,9 @@ export async function POST(req: Request) {
       maxTokens: 4096,
       toolCallStreaming: true,
       system: systemPrompts,
+      experimental_transform: smoothStream({
+        chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+      }),
       tools: {
         getInformation: tool({
           description: `get information from your knowledge base to answer questions.`,
@@ -131,19 +134,18 @@ export async function POST(req: Request) {
               ),
           }),
           execute: async ({ query }) => {
-            // Wrap this nested call in retry logic as well
             return await withRetry(async () => {
               const { object } = await generateObject({
                 model: google("gemini-2.0-flash"),
                 system:
-                  "You are a highly specialized Query Expansion Assistant expert in the field of Psychology. Your ONLY function is to receive a user's query related to psychology and generate EXACTLY 5 distinct, related questions.\n\n**Your Goal:** To formulate questions that, when used as search terms, will retrieve comprehensive information covering various facets of the user's original topic from a knowledge base.\n\n**Instructions:**\n1. **Analyze the Input:** Deeply understand the core concepts, nuances, and potential implicit questions within the user's psychology-related query.\n2. **Generate 5 Diverse Questions:** Create five unique questions that explore the topic from multiple angles:\n    *   **Rephrasing/Synonyms:** Use different psychological terminology.\n    *   **Sub-topics:** Break down the main topic into smaller, related psychological concepts.\n    *   **Perspectives/Contexts:** Consider theoretical viewpoints (e.g., cognitive, behavioral, psychodynamic), developmental stages, cultural factors, or clinical vs. research contexts relevant to the query.\n    *   **Underlying Needs/Implications:** Explore potential practical applications, related conditions, therapeutic approaches, or ethical considerations if appropriate.\n    *   **Specificity/Generality:** Include both broader and more specific related questions.\n3. **Psychology Focus:** Ensure ALL generated questions remain strictly within the domain of psychology. Ignore any non-psychological aspects of the input query.\n4. **Format:** Output ONLY the list of 5 questions.\n5. **Constraints:**\n    *   Do NOT answer the original query.\n    *   Do NOT provide definitions or explanations.\n    *   Do NOT include any introductory or concluding remarks.\n    *   Generate full questions, not just keywords.",
+                  "Anda adalah Asisten Perluasan Kueri yang sangat terspesialisasi dan ahli di bidang Psikologi. Fungsi SATU-SATUNYA Anda adalah menerima kueri pengguna terkait psikologi dan menghasilkan TEPAT 5 pertanyaan berbeda yang saling terkait.\n\n**Tujuan Anda:** Merumuskan pertanyaan yang, ketika digunakan sebagai istilah pencarian, akan mengambil informasi komprehensif yang mencakup berbagai aspek topik asli pengguna dari basis pengetahuan.\n\n**Instruksi:**\n1. **Analisis Input:** Pahami secara mendalam konsep inti, nuansa, dan potensi pertanyaan implisit dalam kueri pengguna yang terkait dengan psikologi.\n2. **Hasilkan 5 Pertanyaan Beragam:** Buat lima pertanyaan unik yang mengeksplorasi topik dari berbagai sudut:\n    *   **Parafrasa/Sinonim:** Gunakan terminologi psikologis yang berbeda.\n    *   **Sub-topik:** Pecah topik utama menjadi konsep psikologis terkait yang lebih kecil.\n    *   **Perspektif/Konteks:** Pertimbangkan sudut pandang teoretis (mis., kognitif, perilaku, psikodinamik), tahap perkembangan, faktor budaya, atau konteks klinis vs. penelitian yang relevan dengan kueri.\n    *   **Kebutuhan/Implikasi Mendasar:** Jelajahi potensi aplikasi praktis, kondisi terkait, pendekatan terapeutik, atau pertimbangan etis jika sesuai.\n    *   **Spesifisitas/Generalitas:** Sertakan pertanyaan terkait yang lebih luas dan lebih spesifik.\n3. **Fokus Psikologi:** Pastikan SEMUA pertanyaan yang dihasilkan tetap berada dalam domain psikologi secara ketat. Abaikan aspek non-psikologis dari kueri input.\n4. **Format:** Keluarkan HANYA daftar 5 pertanyaan.\n5. **Batasan:**\n    *   JANGAN menjawab kueri asli.\n    *   JANGAN memberikan definisi atau penjelasan.\n    *   JANGAN menyertakan komentar pembuka atau penutup.\n    *   Hasilkan pertanyaan lengkap, bukan hanya kata kunci.",
                 schema: z.object({
                   questions: z
                     .array(z.string())
                     .max(5)
-                    .describe("5 diverse psychology-related questions derived from the user's query, suitable for knowledge base search."),
+                    .describe("5 pertanyaan beragam terkait psikologi yang berasal dari kueri pengguna, cocok untuk pencarian basis pengetahuan."),
                 }),
-                prompt: `User Query (Psychology): "${query}"\n\nGenerate exactly 5 diverse, related questions suitable for searching a psychology knowledge base, covering different aspects and angles of the original topic as per instructions.`,
+                prompt: `Kueri Pengguna (Psikologi): "${query}"\n\nHasilkan tepat 5 pertanyaan beragam yang saling terkait dan cocok untuk mencari basis pengetahuan psikologi, mencakup berbagai aspek dan sudut pandang topik asli sesuai instruksi.`,
               });
               return object.questions;
             });

@@ -174,7 +174,6 @@ export const ChatBody = memo(function ChatBody({
                   ) : null
                 )}
               </AnimatePresence>
-              {awaitingResponse && <Loading tool={currentToolCall} />}
               {hasError && (
                 <div className="text-center py-2 text-sm text-yellow-500">
                   Some content may not display correctly.

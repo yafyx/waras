@@ -1,9 +1,18 @@
 "use client";
 
 import { timeAgo } from "@/lib/utils";
-import type { Message, ToolCall } from "ai";
-import { motion } from "framer-motion";
-import { Copy, Check, ChevronDown, BookOpen, ExternalLink } from "lucide-react";
+import type { Message, ToolCall, ToolInvocation } from "ai";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Copy,
+  Check,
+  ChevronDown,
+  BookOpen,
+  ExternalLink,
+  Cog,
+  CheckCircle,
+  SearchCheck,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeSlug from "rehype-slug";
@@ -24,22 +33,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LoadingIcon } from "@/components/icons";
 
 interface MessageItemProps {
   message: Message;
   isLast: boolean;
 }
 
-// Optimized animation variants
 const messageVariants = {
   hidden: { opacity: 0, y: 5 },
   visible: { opacity: 1, y: 0 },
   exit: { opacity: 0 },
 };
 
-// Memoized markdown component to prevent unnecessary re-renders
 const MarkdownContent = memo(({ content }: { content: string }) => {
-  // Split content to separate main content and sources
   const parts = content.split(/\n\n+Sumber:/);
   const mainContent = parts[0];
   const hasSources = parts.length > 1;
@@ -158,48 +165,134 @@ const MarkdownContent = memo(({ content }: { content: string }) => {
 
 MarkdownContent.displayName = "MarkdownContent";
 
-// Check if a message is currently invoking tools
-const isInvokingTools = (message: Message) => {
-  // Look for tool calls in the message
-  const toolCalls = ("tools" in message ? message.tools : []) as Array<{
-    state: string;
-    toolName: string;
-  }>;
+const ToolInvocationDisplay = memo(
+  ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+    const { state, toolName, args } = toolInvocation;
+    const argsString = JSON.stringify(args, null, 2);
+    const [isVisible, setIsVisible] = useState(false);
 
-  if (!toolCalls || toolCalls.length === 0) {
-    return false;
+    return (
+      <div className="mt-2 mb-4 border border-neutral-700/50 rounded-lg bg-neutral-800/30 text-sm overflow-hidden transition-all duration-200">
+        <div
+          className="flex items-center justify-between p-3 cursor-pointer hover:bg-neutral-700/20 transition-colors duration-200"
+          onClick={() => setIsVisible(!isVisible)}
+        >
+          <div className="flex items-center gap-2 font-medium text-neutral-400">
+            {state !== "result" ? (
+              <div className="animate-spin dark:text-neutral-400 text-neutral-500">
+                <LoadingIcon />
+              </div>
+            ) : (
+              <SearchCheck className="h-4 w-4 text-green-500" />
+            )}
+            <span>
+              {state === "partial-call" || state === "call"
+                ? `Calling tool: ${toolName}...`
+                : `Tool called: ${toolName}`}
+            </span>
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 text-neutral-400 transition-transform duration-200 ${
+              isVisible ? "rotate-180" : ""
+            }`}
+          />
+        </div>
+        {isVisible && state !== "partial-call" && (
+          <div className="px-3 pb-3 pt-0 border-t border-neutral-700/30">
+            <Accordion type="single" collapsible className="w-full text-xs">
+              <AccordionItem value="tool-details" className="border-b-0">
+                <AccordionTrigger className="py-1 hover:no-underline justify-start gap-1 text-neutral-500 hover:text-neutral-300 transition-colors duration-200">
+                  Details
+                </AccordionTrigger>
+                <AccordionContent className="pt-1 pb-0">
+                  {args && (
+                    <details className="mb-2 cursor-pointer group">
+                      <summary className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-200">
+                        Arguments:
+                      </summary>
+                      <pre className="mt-1 p-2 bg-neutral-900/50 rounded text-[11px] overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
+                        <code>{argsString}</code>
+                      </pre>
+                    </details>
+                  )}
+                  {state === "result" && toolInvocation.result && (
+                    <details className="cursor-pointer group" open>
+                      <summary className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-200">
+                        Result:
+                      </summary>
+                      <pre className="mt-1 p-2 bg-neutral-900/50 rounded text-[11px] overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
+                        <code>
+                          {(() => {
+                            try {
+                              const result = toolInvocation.result;
+                              if (
+                                Array.isArray(result) &&
+                                result.length > 0 &&
+                                "similarity" in result[0]
+                              ) {
+                                const sortedResult = [...result].sort(
+                                  (a, b) =>
+                                    (b.similarity || 0) - (a.similarity || 0)
+                                );
+                                return JSON.stringify(sortedResult, null, 2);
+                              }
+                              return JSON.stringify(result, null, 2);
+                            } catch (e) {
+                              return JSON.stringify(
+                                toolInvocation.result,
+                                null,
+                                2
+                              );
+                            }
+                          })()}
+                        </code>
+                      </pre>
+                    </details>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
+      </div>
+    );
   }
+);
+ToolInvocationDisplay.displayName = "ToolInvocationDisplay";
 
-  // Check if any tool is in "partial-call" or "call" state
-  return toolCalls.some(
-    (tool) => tool.state === "partial-call" || tool.state === "call"
+const haveToolsFinished = (message: Message): boolean => {
+  return (
+    !message.toolInvocations ||
+    message.toolInvocations.length === 0 ||
+    message.toolInvocations.every((invocation) => invocation.state === "result")
   );
 };
 
-// Memoized message item component
 function MessageItemComponent({ message, isLast }: MessageItemProps) {
   const isUser = message.role === "user";
   const isSystem = message.role === "system";
   const [isCopied, setIsCopied] = useState(false);
+  const [showTools, setShowTools] = useState(false);
+  const hasTools =
+    message.toolInvocations && message.toolInvocations.length > 0;
+  const toolsRunning = hasTools && !haveToolsFinished(message);
+  const showContent =
+    !isUser && !isSystem && message.content && haveToolsFinished(message);
+  const showToolInvocations = !isUser && !isSystem && hasTools && showTools;
 
-  // Moved useEffect higher to ensure it's not seen as conditional
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
     if (isCopied) {
       timer = setTimeout(() => {
         setIsCopied(false);
-      }, 2000); // Reset after 2 seconds
+      }, 2000);
     }
     return () => {
       if (timer) clearTimeout(timer);
     };
   }, [isCopied]);
 
-  // Check if this message is currently invoking tools
-  const toolsInProgress = !isUser && !isSystem && isInvokingTools(message);
-
-  // If tools are being invoked, don't show content yet
-  if (toolsInProgress && !message.content) {
+  if (message.role === "assistant" && !message.content && !hasTools) {
     return null;
   }
 
@@ -208,22 +301,6 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
       setIsCopied(true);
     });
   };
-
-  // Handle system messages differently
-  if (isSystem) {
-    return (
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        variants={messageVariants}
-        transition={{ duration: 0.15 }}
-        className="text-center py-2 px-4 max-w-3xl mx-auto text-sm text-neutral-400 italic"
-      >
-        {message.content}
-      </motion.div>
-    );
-  }
 
   return (
     <motion.section
@@ -258,7 +335,84 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
         {isUser ? (
           <p>{message.content}</p>
         ) : (
-          <MarkdownContent content={message.content} />
+          <>
+            {toolsRunning && (
+              <div className="flex items-center gap-2 text-sm text-neutral-400 py-2 px-3 bg-neutral-800/30 rounded-lg border border-neutral-700/30 mb-2">
+                <div className="animate-spin dark:text-neutral-400 text-neutral-500">
+                  <LoadingIcon />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium">Sedang memproses...</span>
+                  <span className="text-xs text-neutral-500">
+                    {
+                      message.toolInvocations?.filter(
+                        (t) => t.state !== "result"
+                      ).length
+                    }{" "}
+                    tool
+                    {message.toolInvocations?.filter(
+                      (t) => t.state !== "result"
+                    ).length !== 1
+                      ? "s"
+                      : ""}{" "}
+                    sedang berjalan
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowTools(true)}
+                  className="ml-auto text-xs text-neutral-400 hover:text-neutral-300 transition-colors"
+                  aria-label="Tampilkan detail tools"
+                >
+                  Lihat Detail
+                </button>
+              </div>
+            )}
+
+            {hasTools && haveToolsFinished(message) && (
+              <div className="flex justify-end mb-1">
+                <button
+                  onClick={() => setShowTools(!showTools)}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-all duration-200 text-xs group"
+                  aria-label={
+                    showTools ? "Sembunyikan tools" : "Tampilkan tools"
+                  }
+                >
+                  <Cog className="h-3 w-3 group-hover:rotate-45 transition-transform duration-300" />
+                  <span>
+                    {showTools ? "Sembunyikan Tools" : "Tampilkan Tools"}
+                  </span>
+                  <ChevronDown
+                    className={`h-3 w-3 transition-transform duration-200 ${
+                      showTools ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
+
+            {hasTools && (
+              <AnimatePresence>
+                {showToolInvocations && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    {message.toolInvocations?.map((toolInvocation) => (
+                      <ToolInvocationDisplay
+                        key={toolInvocation.toolCallId}
+                        toolInvocation={toolInvocation}
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
+
+            {showContent && <MarkdownContent content={message.content} />}
+          </>
         )}
       </div>
 
@@ -294,5 +448,4 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
   );
 }
 
-// Export memoized component to prevent re-rendering when props haven't changed
 export const MessageItem = memo(MessageItemComponent);
