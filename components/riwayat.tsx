@@ -244,7 +244,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
             </div>
           </div>
         </CredenzaTitle>
-        <CredenzaBody className="p-0 overflow-hidden h-[calc(600px-102px)]">
+        <CredenzaBody className="p-0 overflow-hidden h-[498px]">
           {Object.entries(groupedChats).length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-10 text-center animate-in fade-in-50 duration-300">
               {searchQuery ? (
@@ -283,7 +283,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
             <>
               {/* Delete All Chats button - shown only when there are chats and no search */}
               {!searchQuery && totalChats > 0 && (
-                <div className="flex justify-end px-3 pt-3 pb-1">
+                <div className="flex justify-end px-3 pt-1 pb-0">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -296,7 +296,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 </div>
               )}
               <div className="h-full overflow-y-auto custom-scrollbar">
-                <div className="p-3 space-y-5">
+                <div className="p-3 pt-1 space-y-5 relative">
                   {Object.entries(groupedChats).map(([dateGroup, chats]) => (
                     <div key={dateGroup} className="space-y-0 pt-0">
                       <div className="sticky top-0 z-10 bg-neutral-900/95 backdrop-blur-sm py-1 px-1 mt-0">
@@ -332,9 +332,13 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                                 </p>
                                 <p className="text-xs text-neutral-500 mt-2">
                                   {chat.timestamp &&
-                                    format(new Date(chat.timestamp), "HH:mm", {
-                                      locale: id,
-                                    })}
+                                    format(
+                                      new Date(chat.timestamp),
+                                      "EEEE, d MMMM yyyy • HH:mm",
+                                      {
+                                        locale: id,
+                                      }
+                                    )}
                                 </p>
                               </div>
                               <div
