@@ -41,6 +41,7 @@ export default function ChatPage({}: ChatPageProps) {
   const [isPending, startTransition] = useTransition();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
 
   const getFilteredMessages = (msgs: Message[]) => {
     return msgs.filter(
@@ -265,22 +266,37 @@ export default function ChatPage({}: ChatPageProps) {
     }
   }, [loadingError]);
 
-  // Show button if user is not at the bottom
+  // Show button if user is not at the bottom and check if content is scrollable
   useEffect(() => {
     const handleScroll = () => {
       const container = scrollContainerRef.current;
       if (!container) return;
-      const threshold = 120; // px from bottom
+      const threshold = 150; // px from bottom - increased for better detection with fixed input
       const isAtBottom =
         container.scrollHeight - container.scrollTop - container.clientHeight <
         threshold;
       setShowScrollToBottom(!isAtBottom);
+
+      // Check if content is scrollable
+      setIsScrollable(container.scrollHeight > container.clientHeight);
     };
     const container = scrollContainerRef.current;
-    if (container) container.addEventListener("scroll", handleScroll);
-    return () => {
-      if (container) container.removeEventListener("scroll", handleScroll);
-    };
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      // Initial check
+      handleScroll();
+
+      // Add resize observer to check scrollability when window size changes
+      const resizeObserver = new ResizeObserver(() => {
+        handleScroll();
+      });
+      resizeObserver.observe(container);
+
+      return () => {
+        container.removeEventListener("scroll", handleScroll);
+        resizeObserver.disconnect();
+      };
+    }
   }, []);
 
   function handleScrollToBottom() {
@@ -302,7 +318,9 @@ export default function ChatPage({}: ChatPageProps) {
       <div className="flex-1 flex flex-col relative overflow-hidden">
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end"
+          className={`flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end pb-24 sm:pb-24 ${
+            isScrollable ? "mb-24" : ""
+          }`}
         >
           <ChatBody
             allMessages={allMessages}
@@ -311,10 +329,10 @@ export default function ChatPage({}: ChatPageProps) {
             messagesEndRef={messagesEndRef}
           />
         </div>
-        <section className="sticky bottom-0 w-full z-20">
+        <section className="fixed bottom-0 sm:left-37.5 inset-x-0 z-20 w-full">
           <div className="relative">
-            <div className="absolute -top-12 inset-x-0 h-12 bg-gradient-to-b from-transparent to-background pointer-events-none z-10"></div>
-            <div className="max-w-3xl mx-auto px-2 pb-2 sm:pb-4 relative">
+            <div className="absolute max-w-5xl sm:left-37.5 -top-12 inset-x-0 h-12 bg-gradient-to-b from-transparent to-background pointer-events-none"></div>
+            <div className="bg-background/95 backdrop-blur-sm max-w-3xl mx-auto px-2 pb-2 sm:pb-4 relative">
               <InputArea
                 input={input}
                 textareaRef={textareaRef}
@@ -333,7 +351,7 @@ export default function ChatPage({}: ChatPageProps) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 16 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="absolute cursor-pointer -top-10 right-2 z-30 flex items-center justify-center rounded-full bg-neutral-800 text-white shadow-lg border border-neutral-700 transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 h-8 w-8"
+                    className="absolute cursor-pointer -top-14 right-2 z-30 flex items-center justify-center rounded-full bg-neutral-800 text-white shadow-lg border border-neutral-700 transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 h-8 w-8"
                     aria-label="Scroll to bottom"
                   >
                     <ChevronDown className="size-4" />
