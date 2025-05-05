@@ -166,18 +166,19 @@ const MarkdownContent = memo(({ content }: { content: string }) => {
 
 MarkdownContent.displayName = "MarkdownContent";
 
+interface ToolInvocationDisplayProps {
+  toolInvocation: ToolInvocation;
+  isOpen: boolean;
+}
+
 const ToolInvocationDisplay = memo(
-  ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+  ({ toolInvocation, isOpen }: ToolInvocationDisplayProps) => {
     const { state, toolName, args } = toolInvocation;
     const argsString = JSON.stringify(args, null, 2);
-    const [isVisible, setIsVisible] = useState(false);
 
     return (
       <div className="mt-2 mb-4 border border-neutral-700/50 rounded-lg bg-neutral-800/30 text-sm overflow-hidden transition-all duration-200">
-        <div
-          className="flex items-center justify-between p-3 cursor-pointer hover:bg-neutral-700/20 transition-colors duration-200"
-          onClick={() => setIsVisible(!isVisible)}
-        >
+        <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-2 font-medium text-neutral-400">
             {state !== "result" ? (
               <div className="animate-spin dark:text-neutral-400 text-neutral-500">
@@ -192,13 +193,8 @@ const ToolInvocationDisplay = memo(
                 : `Tool called: ${toolName}`}
             </span>
           </div>
-          <ChevronDown
-            className={`h-4 w-4 text-neutral-400 transition-transform duration-200 ${
-              isVisible ? "rotate-180" : ""
-            }`}
-          />
         </div>
-        {isVisible && state !== "partial-call" && (
+        {state !== "partial-call" && (
           <div className="px-3 pb-3 pt-0 border-t border-neutral-700/30">
             <Accordion type="single" collapsible className="w-full text-xs">
               <AccordionItem value="tool-details" className="border-b-0">
@@ -396,6 +392,7 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
                       <ToolInvocationDisplay
                         key={toolInvocation.toolCallId}
                         toolInvocation={toolInvocation}
+                        isOpen={showTools}
                       />
                     ))}
                   </motion.div>
