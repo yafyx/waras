@@ -326,10 +326,10 @@ export default function ChatPage({}: ChatPageProps) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 16 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="absolute cursor-pointer -top-12 right-2 z-30 flex items-center justify-center rounded-full bg-neutral-800 text-white shadow-lg border border-neutral-700 transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 h-10 w-10"
+                    className="absolute cursor-pointer -top-10 right-2 z-30 flex items-center justify-center rounded-full bg-neutral-800 text-white shadow-lg border border-neutral-700 transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 h-8 w-8"
                     aria-label="Scroll to bottom"
                   >
-                    <ChevronDown className="size-6" />
+                    <ChevronDown className="size-4" />
                   </motion.button>
                 )}
               </AnimatePresence>
