@@ -4,9 +4,8 @@ import { Message } from "ai";
 import { useChat } from "ai/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useMemo, useTransition } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { ChatBody, InputArea } from "@/components/chat";
-import dynamic from "next/dynamic";
 import {
   loadChatFromLocalStorage,
   saveChatToLocalStorage,
@@ -16,7 +15,6 @@ import { toast } from "sonner";
 import { useOptimistic } from "react";
 import { ChevronDown } from "lucide-react";
 
-// Animation variants with reduced duration
 const variants = {
   hidden: { opacity: 0 },
   enter: { opacity: 1 },
@@ -28,6 +26,7 @@ interface ChatPageProps {}
 export default function ChatPage({}: ChatPageProps) {
   const params = useParams();
   const pathname = usePathname();
+  const router = useRouter();
   const chatId = params.id as string;
 
   const [toolCall, setToolCall] = useState<string | undefined>(undefined);
@@ -43,13 +42,21 @@ export default function ChatPage({}: ChatPageProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
-  // Helper function to filter messages
   const getFilteredMessages = (msgs: Message[]) => {
     return msgs.filter(
       (m: Message) =>
         m.role === "user" || m.role === "assistant" || m.role === "system"
     );
   };
+
+  useEffect(() => {
+    if (initialMessages.length > 0) {
+      const firstUserMessage = initialMessages.find((m) => m.role === "user");
+      if (firstUserMessage?.content) {
+        document.title = `${firstUserMessage.content} - Waras AI`;
+      }
+    }
+  }, [initialMessages]);
 
   // Load existing chat from localStorage - with debouncing
   useEffect(() => {
