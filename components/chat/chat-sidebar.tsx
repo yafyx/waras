@@ -39,6 +39,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Loading } from "@/components/chat";
 import { GalleryVerticalEnd } from "lucide-react";
@@ -477,28 +478,36 @@ export function Sidebar({ chatList = [], currentChatId }: SidebarProps) {
         `}</style>
       </nav>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="bg-neutral-900 border border-neutral-800 text-white">
+      <Dialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => !open && cancelDelete()}
+      >
+        <DialogContent className="sm:max-w-[425px] bg-neutral-900 border-neutral-800">
           <DialogHeader>
-            <DialogTitle>Hapus Chat</DialogTitle>
-            <DialogDescription className="text-neutral-400">
-              Apakah Anda yakin ingin menghapus obrolan ini? Tindakan ini tidak
-              dapat dibatalkan.
+            <DialogTitle className="text-white text-center sm:text-left">
+              Hapus Chat
+            </DialogTitle>
+            <DialogDescription className="text-neutral-400 text-center sm:text-left">
+              Yakin ingin menghapus chat ini? Tindakan ini tidak dapat
+              dibatalkan.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="sm:justify-center">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={cancelDelete}
+                className="border-neutral-700 bg-transparent hover:bg-neutral-800 text-neutral-300"
+              >
+                Batal
+              </Button>
+            </DialogClose>
             <Button
-              variant="ghost"
-              onClick={() => setIsDeleteDialogOpen(false)}
-              className="bg-transparent text-white border-neutral-700 hover:bg-neutral-800 hover:text-white cursor-pointer"
-            >
-              Batal
-            </Button>
-            <Button
-              onClick={confirmDelete}
               variant="destructive"
-              className="bg-red-500 hover:bg-red-600 text-white focus:ring-red-500 cursor-pointer"
+              size="sm"
+              onClick={confirmDelete}
+              className="bg-white hover:bg-neutral-200 text-black"
             >
               Hapus
             </Button>

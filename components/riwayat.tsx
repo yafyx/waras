@@ -13,6 +13,15 @@ import {
 } from "@/components/credenza";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import {
   getAllChatsFromLocalStorage,
   deleteChatFromLocalStorage,
   ChatInfo,
@@ -343,7 +352,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                               </div>
                               <div
                                 className={cn(
-                                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2",
+                                  "opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2",
                                   hoveredChatId === chat.id && "opacity-100"
                                 )}
                               >
@@ -370,15 +379,22 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
           )}
         </CredenzaBody>
 
-        {chatToDelete && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-neutral-900 p-4 rounded-lg shadow-lg max-w-[300px] w-full text-center space-y-4 border border-neutral-800">
-              <h3 className="font-medium text-white">Hapus Chat</h3>
-              <p className="text-sm text-neutral-400">
+        <Dialog
+          open={!!chatToDelete}
+          onOpenChange={(open) => !open && cancelDelete()}
+        >
+          <DialogContent className="sm:max-w-[425px] bg-neutral-900 border-neutral-800">
+            <DialogHeader>
+              <DialogTitle className="text-white text-center sm:text-left">
+                Hapus Chat
+              </DialogTitle>
+              <DialogDescription className="text-neutral-400 text-center sm:text-left">
                 Yakin ingin menghapus chat ini? Tindakan ini tidak dapat
                 dibatalkan.
-              </p>
-              <div className="flex justify-center gap-2">
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-center">
+              <DialogClose asChild>
                 <Button
                   variant="outline"
                   size="sm"
@@ -387,28 +403,35 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 >
                   Batal
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={confirmDelete}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Hapus
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+              </DialogClose>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={confirmDelete}
+                className="bg-white hover:bg-neutral-200 text-black"
+              >
+                Hapus
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-        {isDeleteAllConfirmOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-neutral-900 p-4 rounded-lg shadow-lg max-w-[300px] w-full text-center space-y-4 border border-neutral-800">
-              <h3 className="font-medium text-white">Hapus Semua Chat</h3>
-              <p className="text-sm text-neutral-400">
+        <Dialog
+          open={isDeleteAllConfirmOpen}
+          onOpenChange={(open) => !open && cancelDeleteAllChats()}
+        >
+          <DialogContent className="sm:max-w-[425px] bg-neutral-900 border-neutral-800">
+            <DialogHeader>
+              <DialogTitle className="text-white text-center sm:text-left">
+                Hapus Semua Chat
+              </DialogTitle>
+              <DialogDescription className="text-neutral-400 text-center sm:text-left">
                 Yakin ingin menghapus semua chat? Tindakan ini tidak dapat
                 dibatalkan dan akan menghapus semua riwayat percakapan.
-              </p>
-              <div className="flex justify-center gap-2">
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-center">
+              <DialogClose asChild>
                 <Button
                   variant="outline"
                   size="sm"
@@ -417,18 +440,18 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 >
                   Batal
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={confirmDeleteAllChats}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Hapus Semua
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+              </DialogClose>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={confirmDeleteAllChats}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Hapus Semua
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CredenzaContent>
     </Credenza>
   );
