@@ -3,6 +3,7 @@ import { Instrument_Serif } from "next/font/google";
 import { Providers } from "./providers";
 import { FloatingButton } from "@/components/ui/floating-button";
 import { GlobalStyle } from "@/components/riwayat";
+import { Analytics } from "@vercel/analytics/react";
 
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function RootLayout({
       style={{ colorScheme: "dark" }}
     >
       <body>
+        <Analytics />
         <Providers>
           <div vaul-drawer-wrapper="" data-vaul-drawer-wrapper="">
             <div className="relative flex min-h-screen flex-col bg-background">
