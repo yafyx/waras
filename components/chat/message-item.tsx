@@ -12,6 +12,7 @@ import {
   Cog,
   CheckCircle,
   SearchCheck,
+  Wrench,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeExternalLinks from "rehype-external-links";
@@ -342,20 +343,11 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
                   <LoadingIcon />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-medium">Sedang memproses...</span>
+                  <span className="font-medium">
+                    Sebentar ya, saya sedang merenungkan pertanyaan Anda...
+                  </span>
                   <span className="text-xs text-neutral-500">
-                    {
-                      message.toolInvocations?.filter(
-                        (t) => t.state !== "result"
-                      ).length
-                    }{" "}
-                    tool
-                    {message.toolInvocations?.filter(
-                      (t) => t.state !== "result"
-                    ).length !== 1
-                      ? "s"
-                      : ""}{" "}
-                    sedang berjalan
+                    Waras AI sedang mengumpulkan informasi...
                   </span>
                 </div>
                 <button
@@ -377,7 +369,7 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
                     showTools ? "Sembunyikan tools" : "Tampilkan tools"
                   }
                 >
-                  <Cog className="h-3 w-3 group-hover:rotate-45 transition-transform duration-300" />
+                  <Wrench className="h-3 w-3 group-hover:rotate-45 transition-transform duration-300" />
                   <span>
                     {showTools ? "Sembunyikan Tools" : "Tampilkan Tools"}
                   </span>
