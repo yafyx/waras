@@ -28,8 +28,8 @@ interface ChatBodyProps {
 // This ensures the component has consistent class names between server and client
 const EmptyState = memo(function EmptyState() {
   return (
-    <div className="w-full px-4 py-8 flex flex-col h-full justify-end">
-      <div className="max-w-3xl mx-auto w-full">
+    <div className="w-full py-8 flex flex-col h-full justify-end">
+      <div className="max-w-3xl mx-auto w-full px-4">
         {/* Logo and Title */}
         <BlurFade direction="up" delay={0.1}>
           <div className="flex items-center gap-3 justify-center mb-8">
