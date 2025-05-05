@@ -305,32 +305,35 @@ export default function ChatPage({}: ChatPageProps) {
           />
         </div>
         <section className="sticky bottom-0 w-full z-20">
-          <div className="max-w-3xl mx-auto px-2 pb-2 sm:pb-4 relative">
-            <InputArea
-              input={input}
-              textareaRef={textareaRef}
-              handleInputChange={handleInputChange}
-              onFormSubmit={onFormSubmit}
-              awaitingResponse={awaitingResponse || isPending}
-              showScrollToBottom={showScrollToBottom}
-              onScrollToBottom={handleScrollToBottom}
-            />
-            <AnimatePresence>
-              {showScrollToBottom && (
-                <motion.button
-                  type="button"
-                  onClick={handleScrollToBottom}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 16 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="absolute cursor-pointer -top-12 right-2 z-30 flex items-center justify-center rounded-full bg-neutral-800 text-white shadow-lg border border-neutral-700 transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 h-10 w-10"
-                  aria-label="Scroll to bottom"
-                >
-                  <ChevronDown className="size-6" />
-                </motion.button>
-              )}
-            </AnimatePresence>
+          <div className="relative">
+            <div className="absolute -top-12 inset-x-0 h-12 bg-gradient-to-b from-transparent to-background pointer-events-none z-10"></div>
+            <div className="max-w-3xl mx-auto px-2 pb-2 sm:pb-4 relative">
+              <InputArea
+                input={input}
+                textareaRef={textareaRef}
+                handleInputChange={handleInputChange}
+                onFormSubmit={onFormSubmit}
+                awaitingResponse={awaitingResponse || isPending}
+                showScrollToBottom={showScrollToBottom}
+                onScrollToBottom={handleScrollToBottom}
+              />
+              <AnimatePresence>
+                {showScrollToBottom && (
+                  <motion.button
+                    type="button"
+                    onClick={handleScrollToBottom}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 16 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="absolute cursor-pointer -top-12 right-2 z-30 flex items-center justify-center rounded-full bg-neutral-800 text-white shadow-lg border border-neutral-700 transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 h-10 w-10"
+                    aria-label="Scroll to bottom"
+                  >
+                    <ChevronDown className="size-6" />
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </section>
       </div>
