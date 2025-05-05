@@ -17,6 +17,8 @@ interface InputAreaProps {
   ) => void;
   awaitingResponse: boolean;
   isChatActive?: boolean;
+  showScrollToBottom?: boolean;
+  onScrollToBottom?: () => void;
 }
 
 // Memoize the component to prevent unnecessary re-renders
@@ -27,6 +29,8 @@ export const InputArea = memo(function InputArea({
   onFormSubmit,
   awaitingResponse,
   isChatActive,
+  showScrollToBottom,
+  onScrollToBottom,
 }: InputAreaProps) {
   const [textareaHeight, setTextareaHeight] = useState(60);
   const minHeight = 60;

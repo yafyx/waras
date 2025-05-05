@@ -2,7 +2,7 @@
 
 import { Message } from "ai";
 import { useChat } from "ai/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useMemo, useTransition } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { ChatBody, InputArea } from "@/components/chat";
@@ -14,6 +14,7 @@ import {
 } from "@/lib/chat-storage";
 import { toast } from "sonner";
 import { useOptimistic } from "react";
+import { ChevronDown } from "lucide-react";
 
 // Animation variants with reduced duration
 const variants = {
@@ -39,6 +40,8 @@ export default function ChatPage({}: ChatPageProps) {
   const [storageAvailable] = useState(() => isStorageAvailable());
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   // Helper function to filter messages
   const getFilteredMessages = (msgs: Message[]) => {
@@ -255,6 +258,30 @@ export default function ChatPage({}: ChatPageProps) {
     }
   }, [loadingError]);
 
+  // Show button if user is not at the bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      const threshold = 120; // px from bottom
+      const isAtBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        threshold;
+      setShowScrollToBottom(!isAtBottom);
+    };
+    const container = scrollContainerRef.current;
+    if (container) container.addEventListener("scroll", handleScroll);
+    return () => {
+      if (container) container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  function handleScrollToBottom() {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  }
+
   return (
     <motion.div
       key={pathname}
@@ -266,7 +293,10 @@ export default function ChatPage({}: ChatPageProps) {
       className="flex flex-col h-screen"
     >
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end">
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end"
+        >
           <ChatBody
             allMessages={allMessages}
             awaitingResponse={awaitingResponse || isPending}
@@ -274,16 +304,33 @@ export default function ChatPage({}: ChatPageProps) {
             messagesEndRef={messagesEndRef}
           />
         </div>
-
         <section className="sticky bottom-0 w-full z-20">
-          <div className="max-w-3xl mx-auto pb-4">
+          <div className="max-w-3xl mx-auto pb-4 relative">
             <InputArea
               input={input}
               textareaRef={textareaRef}
               handleInputChange={handleInputChange}
               onFormSubmit={onFormSubmit}
               awaitingResponse={awaitingResponse || isPending}
+              showScrollToBottom={showScrollToBottom}
+              onScrollToBottom={handleScrollToBottom}
             />
+            <AnimatePresence>
+              {showScrollToBottom && (
+                <motion.button
+                  type="button"
+                  onClick={handleScrollToBottom}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 16 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="absolute cursor-pointer -top-12 right-2 z-30 flex items-center justify-center rounded-full bg-neutral-800 text-white shadow-lg border border-neutral-700 transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 h-10 w-10"
+                  aria-label="Scroll to bottom"
+                >
+                  <ChevronDown className="size-6" />
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </section>
       </div>
