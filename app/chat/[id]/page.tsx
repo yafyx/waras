@@ -275,8 +275,8 @@ export default function ChatPage({}: ChatPageProps) {
           />
         </div>
 
-        <section className="sticky bottom-0 w-full p-3 md:p-4 z-20 bg-background">
-          <div className="max-w-3xl mx-auto">
+        <section className="sticky bottom-0 w-full z-20">
+          <div className="max-w-3xl mx-auto pb-4">
             <InputArea
               input={input}
               textareaRef={textareaRef}
