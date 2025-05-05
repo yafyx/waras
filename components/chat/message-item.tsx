@@ -204,7 +204,10 @@ const ToolInvocationDisplay = memo(
                 <AccordionContent className="pt-1 pb-0">
                   {args && (
                     <details className="mb-2 cursor-pointer group">
-                      <summary className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-200">
+                      <summary
+                        className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-200"
+                        onClick={(e) => e.preventDefault()}
+                      >
                         Arguments:
                       </summary>
                       <pre className="mt-1 p-2 bg-neutral-900/50 rounded text-[11px] overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
@@ -214,7 +217,10 @@ const ToolInvocationDisplay = memo(
                   )}
                   {state === "result" && toolInvocation.result && (
                     <details className="cursor-pointer group" open>
-                      <summary className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-200">
+                      <summary
+                        className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-200"
+                        onClick={(e) => e.preventDefault()}
+                      >
                         Result:
                       </summary>
                       <pre className="mt-1 p-2 bg-neutral-900/50 rounded text-[11px] overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850">
