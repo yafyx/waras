@@ -1,48 +1,79 @@
-# AI SDK RAG Template
+# Waras AI
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-rag-template&env=OPENAI_API_KEY&envDescription=You%20will%20need%20an%20OPENAI%20API%20Key.&project-name=ai-sdk-rag&repository-name=ai-sdk-rag&stores=%5B%7B%22type%22%3A%22postgres%22%7D%5D&skippable-integrations=1)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A [Next.js](https://nextjs.org/) application, powered by the Vercel AI SDK, that uses retrieval-augmented generation (RAG) to reason and respond with information outside of the model's training data.
+> **Waras AI** adalah asisten chat psikologi anonim berbahasa Indonesia, didukung Gemini AI dan basis pengetahuan artikel psikologi dari Alodokter. Dirancang untuk privasi, kecepatan, dan akurasi jawaban psikologi—tanpa akun, tanpa simpan chat di server.
 
-## Features
+---
 
-- Information retrieval and addition through tool calls using the [`streamText`](https://sdk.vercel.ai/docs/reference/ai-sdk-core/stream-text) function
-- Real-time streaming of model responses to the frontend using the [`useChat`](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) hook
-- Vector embedding storage with [DrizzleORM](https://orm.drizzle.team/) and [PostgreSQL](https://www.postgresql.org/)
-- Animated UI with [Framer Motion](https://www.framer.com/motion/)
+## Fitur Utama
 
-## Getting Started
+- **Privasi & Anonimitas:** Chat hanya disimpan di browser Anda (localStorage). Tidak ada akun, tidak ada server-side chat log.
+- **Bahasa Indonesia:** Semua interaksi dan jawaban dalam bahasa Indonesia yang ramah dan empatik.
+- **RAG (Retrieval-Augmented Generation):** Jawaban AI selalu didukung pencarian artikel psikologi Alodokter.
+- **Model Gemini AI:** Menggunakan Google Gemini 2.0 Flash untuk respons cepat dan relevan.
+- **UI Modern:** Next.js App Router, React, Tailwind CSS, Shadcn UI, Radix UI.
+- **Akses Cepat:** Tidak perlu login, langsung tanya jawab.
+- **Fokus Psikologi:** Hanya untuk pertanyaan seputar kesehatan mental & psikologi.
+- **Open Source & Gratis:** MIT License.
 
-To get the project up and running, follow these steps:
+## Tech Stack
 
-1. Install dependencies:
+- **Framework:** Next.js 15 App Router (TypeScript, SSR, RSC)
+- **AI:** Vercel AI SDK, Gemini 2.0 Flash
+- **RAG:** Embedding & vector search (Drizzle ORM + PostgreSQL)
+- **UI:** Tailwind CSS, Shadcn UI, Radix UI, Framer Motion
+- **State:** React, localStorage (client-side chat history)
+- **Database:** PostgreSQL (untuk knowledge base & embedding)
+- **Validation:** Zod
+- **Other:** pnpm, Drizzle Kit, ESLint, Prettier
 
+## Demo
+
+Lihat demo di [waras.vercel.app](https://waras.vercel.app)
+
+## Instalasi & Penggunaan
+
+1. **Clone repository:**
    ```bash
-   npm install
+   git clone https://github.com/your-username/waras.git
+   cd waras
    ```
-
-2. Copy the example environment file:
-
+2. **Install dependencies:**
    ```bash
-   cp .env.example .env
+   pnpm install
    ```
-
-3. Add your OpenAI API key and PostgreSQL connection string to the `.env` file:
-
-   ```
-   OPENAI_API_KEY=your_api_key_here
-   DATABASE_URL=your_postgres_connection_string_here
-   ```
-
-4. Migrate the database schema:
-
+3. **Konfigurasi environment:**
+   - Salin `.env.example` ke `.env` dan isi:
+     ```env
+     DATABASE_URL=postgres://postgres:postgres@localhost:5432/{DB_NAME}
+     GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key
+     ```
+4. **Migrasi database:**
    ```bash
-   npm run db:migrate
+   pnpm run db:migrate
    ```
-
-5. Start the development server:
+5. **Import data Alodokter:**
    ```bash
-   npm run dev
+   pnpm run import-alodokter
    ```
+6. **Jalankan server development:**
+   ```bash
+   pnpm run dev
+   ```
+7. **Akses di browser:**
+   [http://localhost:3000](http://localhost:3000)
 
-Your project should now be running on [http://localhost:3000](http://localhost:3000).
+## Struktur Data & RAG
+
+- Data artikel psikologi Alodokter di-embed dan disimpan di PostgreSQL (vector DB).
+- Setiap pertanyaan user diproses dengan RAG: AI hanya menjawab berdasarkan hasil pencarian artikel relevan.
+- Tidak ada data chat user yang dikirim ke server atau disimpan di database.
+
+## Lisensi
+
+MIT License © 2024 yfyx
+
+---
+
+> **Disclaimer:** Waras AI hanya memberikan informasi edukasi, bukan pengganti konsultasi profesional. Untuk masalah serius, segera hubungi psikolog/psikiater.
