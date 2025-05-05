@@ -57,14 +57,10 @@ const infoItems = [
     title: "Respon Cepat",
     description: (
       <>
-        Didukung model{" "}
-        <span className="text-green-400 font-medium">Gemini AI</span> dan sumber
-        informasi <span className="text-green-400 font-medium">Alodokter</span>{" "}
-        untuk memberikan jawaban{" "}
-        <span className="text-green-400 font-medium">
-          akurat dalam hitungan detik
-        </span>
-        .
+        Respon cepat & akurat didukung{" "}
+        <span className="text-green-400 font-medium">Google Generative AI</span>{" "}
+        dengan sumber informasi dari{" "}
+        <span className="text-green-400 font-medium">Alodokter</span>.
       </>
     ),
     icon: (
