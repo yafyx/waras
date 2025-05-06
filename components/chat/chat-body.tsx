@@ -82,6 +82,17 @@ export const ChatBody = memo(function ChatBody({
           behavior: immediate ? "auto" : "smooth",
           block: "end",
         });
+
+        const scrollContainer =
+          messagesEndRef.current.parentElement?.parentElement;
+        if (scrollContainer && scrollContainer instanceof HTMLElement) {
+          setTimeout(
+            () => {
+              scrollContainer.scrollTop = scrollContainer.scrollHeight + 1000;
+            },
+            immediate ? 10 : 300
+          );
+        }
       }
     },
     [messagesEndRef]
@@ -99,17 +110,10 @@ export const ChatBody = memo(function ChatBody({
     setHasError(false);
 
     if (allMessages.length > 0) {
+      // For initial mount, don't use animations - parent component will handle it
       if (isInitialMount.current) {
-        // Use requestAnimationFrame to wait for DOM paint
-        requestAnimationFrame(() => {
-          try {
-            scrollToBottom(true);
-          } catch (error) {
-            console.error("Error scrolling to bottom:", error);
-            setHasError(true);
-          }
-          isInitialMount.current = false;
-        });
+        isInitialMount.current = false;
+        return; // Skip scrolling on initial mount - let parent handle it
       } else {
         try {
           scrollToBottom(false);
@@ -127,23 +131,26 @@ export const ChatBody = memo(function ChatBody({
     if (resizeObserverRef.current) {
       resizeObserverRef.current.disconnect();
     }
-    // Only observe after initial mount
-    if (!isInitialMount.current) {
-      try {
-        resizeObserverRef.current = new window.ResizeObserver(() => {
-          scrollToBottom(true);
-        });
-        // Observe the parent node of the messagesEndRef (the chat container)
-        if (messagesEndRef.current.parentNode) {
-          resizeObserverRef.current.observe(
-            messagesEndRef.current.parentNode as Element
-          );
+
+    try {
+      resizeObserverRef.current = new window.ResizeObserver(() => {
+        if (!isInitialMount.current) {
+          requestAnimationFrame(() => {
+            scrollToBottom(true);
+          });
         }
-      } catch (error) {
-        console.error("Error setting up ResizeObserver:", error);
-        setHasError(true);
+      });
+
+      if (messagesEndRef.current.parentNode) {
+        resizeObserverRef.current.observe(
+          messagesEndRef.current.parentNode as Element
+        );
       }
+    } catch (error) {
+      console.error("Error setting up ResizeObserver:", error);
+      setHasError(true);
     }
+
     return () => {
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();

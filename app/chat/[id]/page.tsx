@@ -13,7 +13,7 @@ import {
 } from "@/lib/chat-storage";
 import { toast } from "sonner";
 import { useOptimistic } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 
 const variants = {
   hidden: { opacity: 0 },
@@ -42,6 +42,7 @@ export default function ChatPage({}: ChatPageProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [isScrollable, setIsScrollable] = useState(false);
+  const [contentReady, setContentReady] = useState(false);
 
   const getFilteredMessages = (msgs: Message[]) => {
     return msgs.filter(
@@ -63,6 +64,9 @@ export default function ChatPage({}: ChatPageProps) {
   useEffect(() => {
     if (!chatId) return;
 
+    // Ensure content is not visible during load
+    setContentReady(false);
+
     const loadChat = () => {
       try {
         if (!storageAvailable) {
@@ -70,6 +74,7 @@ export default function ChatPage({}: ChatPageProps) {
             "Local storage is not available. Unable to load chat history."
           );
           setHasLoadedInitialMessages(true);
+          setContentReady(true); // Show empty state
           return;
         }
 
@@ -81,10 +86,12 @@ export default function ChatPage({}: ChatPageProps) {
           setLoadingError(
             "No chat history found. This chat may have been deleted or never existed."
           );
+          setContentReady(true); // Show empty state since there are no messages
         }
       } catch (error) {
         console.error("Error loading saved chat:", error);
         setLoadingError("Failed to load chat history.");
+        setContentReady(true); // Show whatever we have in error state
       } finally {
         setHasLoadedInitialMessages(true);
       }
@@ -96,8 +103,34 @@ export default function ChatPage({}: ChatPageProps) {
     return () => {
       setHasLoadedInitialMessages(false);
       setLoadingError(null);
+      setContentReady(false);
     };
   }, [chatId, storageAvailable]);
+
+  // Add effect to scroll to bottom when initial messages are loaded
+  useEffect(() => {
+    if (hasLoadedInitialMessages && initialMessages.length > 0) {
+      setContentReady(false);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const container = scrollContainerRef.current;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+
+            setTimeout(() => {
+              if (container) {
+                container.scrollTop = container.scrollHeight + 1000;
+                setContentReady(true);
+              }
+            }, 10);
+          }
+        }, 0);
+      });
+    } else if (initialMessages.length === 0) {
+      setContentReady(true);
+    }
+  }, [hasLoadedInitialMessages, initialMessages.length]);
 
   // Set up optimistic rendering for new messages
   const [optimisticMessages, addOptimisticMessage] = useOptimistic<
@@ -228,13 +261,11 @@ export default function ChatPage({}: ChatPageProps) {
     e.preventDefault();
     const trimmedInput = directInput || input.trim();
 
-    // More strict validation to prevent empty submissions
     if (!trimmedInput || trimmedInput === "") return;
     if (awaitingResponse) return;
 
     setIsResponseComplete(false);
 
-    // Add the message optimistically - wrapped in startTransition
     startTransition(() => {
       const optimisticUserMessage: Message = {
         id: Date.now().toString(),
@@ -246,9 +277,15 @@ export default function ChatPage({}: ChatPageProps) {
       addOptimisticMessage(optimisticUserMessage);
     });
 
-    // Let the useChat hook handle the submission
     handleSubmit(e as React.FormEvent<HTMLFormElement>);
     textareaRef.current?.focus();
+
+    setTimeout(() => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight + 1000;
+      }
+    }, 50);
   };
 
   const onFormSubmit = (
@@ -302,7 +339,19 @@ export default function ChatPage({}: ChatPageProps) {
   function handleScrollToBottom() {
     const container = scrollContainerRef.current;
     if (!container) return;
-    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+
+    setTimeout(() => {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight + 1000;
+      }, 300);
+    }, 50);
   }
 
   return (
@@ -321,6 +370,7 @@ export default function ChatPage({}: ChatPageProps) {
           className={`flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850 flex flex-col justify-end pb-24 sm:pb-24 ${
             isScrollable ? "mb-24" : ""
           }`}
+          style={{ visibility: contentReady ? "visible" : "hidden" }}
         >
           <ChatBody
             allMessages={allMessages}
