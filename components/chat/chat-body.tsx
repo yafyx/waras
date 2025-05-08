@@ -82,17 +82,6 @@ export const ChatBody = memo(function ChatBody({
           behavior: immediate ? "auto" : "smooth",
           block: "end",
         });
-
-        const scrollContainer =
-          messagesEndRef.current.parentElement?.parentElement;
-        if (scrollContainer && scrollContainer instanceof HTMLElement) {
-          setTimeout(
-            () => {
-              scrollContainer.scrollTop = scrollContainer.scrollHeight + 1000;
-            },
-            immediate ? 10 : 300
-          );
-        }
       }
     },
     [messagesEndRef]
@@ -134,11 +123,7 @@ export const ChatBody = memo(function ChatBody({
 
     try {
       resizeObserverRef.current = new window.ResizeObserver(() => {
-        if (!isInitialMount.current) {
-          requestAnimationFrame(() => {
-            scrollToBottom(true);
-          });
-        }
+        // Intentionally left empty as per previous fix
       });
 
       if (messagesEndRef.current.parentNode) {

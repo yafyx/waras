@@ -307,7 +307,6 @@ function MessageItemComponent({ message, isLast }: MessageItemProps) {
       variants={messageVariants}
       transition={{ duration: 0.15 }}
       className="flex flex-col gap-2 py-4"
-      layout="position"
     >
       <p className="flex items-center gap-2 font-medium">
         {isUser ? (
