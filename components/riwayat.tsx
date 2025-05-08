@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Search, Trash2, X, Trash } from "lucide-react";
+import { Search, Trash2, X, Trash, MessageSquareText } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { id } from "date-fns/locale";
 import {
@@ -12,6 +12,7 @@ import {
   CredenzaTitle,
 } from "@/components/credenza";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -212,13 +213,13 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
       <CredenzaContent className="bg-neutral-900 border-neutral-800 p-0 overflow-hidden rounded-2xl">
         <CredenzaTitle>
           <div
-            className="p-3 border-b border-neutral-800"
+            className="p-4 border-b border-neutral-800"
             ref={dialogTitleRef}
             tabIndex={-1}
           >
-            <div className="flex items-center w-full rounded-lg relative">
-              <div className="flex items-center justify-center pl-2.5 pr-1">
-                <Link href="/">
+            <div className="flex items-center w-full rounded-lg relative gap-1.5">
+              <div className="flex items-center justify-center">
+                <Link href="/" aria-label="Kembali ke halaman utama">
                   <Image
                     src="/waras.png"
                     alt="Waras AI Logo"
@@ -227,29 +228,33 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                     className="select-none"
                     draggable="false"
                   />
+                  <VisuallyHidden>Waras AI Beranda</VisuallyHidden>
                 </Link>
               </div>
-              <input
-                type="text"
-                placeholder="Cari chat..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full py-2 pl-1 pr-4 text-sm placeholder:text-neutral-500 focus:outline-none transition-all duration-200"
-                aria-label="Cari dalam daftar chat"
-                ref={searchInputRef}
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0 h-auto w-auto text-neutral-500 hover:text-white hover:bg-transparent cursor-pointer"
-                  title="Hapus pencarian"
-                  aria-label="Hapus pencarian"
-                >
-                  <X className="size-4" />
-                </Button>
-              )}
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
+                <Input
+                  type="text"
+                  placeholder="Cari chat..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-9 pl-9 pr-8 text-sm placeholder:text-neutral-500 bg-neutral-800/50 focus:bg-neutral-800 border-neutral-700/50 focus:border-neutral-700 rounded-lg transition-all duration-200"
+                  aria-label="Cari dalam daftar chat"
+                  ref={searchInputRef}
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-0 h-7 w-7 text-neutral-500 hover:text-white hover:bg-neutral-700/50 rounded-full cursor-pointer"
+                    title="Hapus pencarian"
+                    aria-label="Hapus pencarian"
+                  >
+                    <X className="size-3.5" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </CredenzaTitle>
@@ -272,13 +277,18 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => setSearchQuery("")}
-                    className="gap-2 text-xs bg-transparent border-neutral-700 hover:bg-neutral-800 text-neutral-300 cursor-pointer"
+                    className="gap-2 text-xs bg-transparent border-neutral-700 hover:bg-neutral-800 text-neutral-300 cursor-pointer transition-colors duration-200"
                   >
+                    <X className="size-3.5" />
                     Hapus pencarian
                   </Button>
                 </>
               ) : (
                 <>
+                  <MessageSquareText
+                    className="size-8 text-neutral-400 mb-3"
+                    strokeWidth={1.5}
+                  />
                   <p className="text-sm font-medium mb-1 text-neutral-300">
                     Belum ada riwayat Chat
                   </p>
@@ -292,23 +302,29 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
             <>
               {/* Delete All Chats button - shown only when there are chats and no search */}
               {!searchQuery && totalChats > 0 && (
-                <div className="flex justify-end px-3 pt-1 pb-0">
+                <div className="px-3 sm:pb-4 border-b border-neutral-800">
                   <Button
                     variant="ghost"
-                    size="sm"
                     onClick={handleDeleteAllChats}
-                    className="text-xs text-neutral-500 hover:text-red-400 hover:bg-neutral-800/50 gap-1.5 py-1 h-auto"
+                    className="w-full justify-center text-xs text-red-500 hover:text-red-400 hover:bg-neutral-800/70 gap-1.5 py-1.5 h-auto transition-colors duration-200"
                   >
                     <Trash className="size-3.5" />
                     Hapus semua chat
                   </Button>
                 </div>
               )}
-              <div className="h-full overflow-y-auto custom-scrollbar">
-                <div className="p-3 pt-1 space-y-5 relative">
+              <div
+                className={cn(
+                  "h-full overflow-y-auto custom-scrollbar",
+                  !searchQuery && totalChats > 0
+                    ? "max-h-[calc(498px-40px)]"
+                    : "max-h-[498px]"
+                )}
+              >
+                <div className="p-3 pt-2 space-y-3 relative">
                   {Object.entries(groupedChats).map(([dateGroup, chats]) => (
-                    <div key={dateGroup} className="space-y-0 pt-0">
-                      <div className="sticky top-0 z-10 bg-neutral-900/95 backdrop-blur-sm py-1 px-1 mt-0">
+                    <div key={dateGroup} className="space-y-2 pt-0">
+                      <div className="sticky top-0 z-10 bg-neutral-900/95 backdrop-blur-md py-1.5 px-1.5 -mx-1.5">
                         <h3 className="text-xs font-medium text-neutral-500 tracking-wider">
                           {dateGroup}
                           <span className="ml-2 text-xs bg-neutral-800 text-neutral-400 rounded-full px-2 py-0.5">
@@ -319,10 +335,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                       {chats.map((chat, index) => (
                         <div
                           key={chat.id}
-                          className={cn(
-                            "transform transition-all duration-300 ease-out mb-2",
-                            index > 0 && "mt-2" // Added gap between items
-                          )}
+                          className="transform transition-all duration-300 ease-out"
                           style={{
                             zIndex: chats.length - index,
                           }}
@@ -331,7 +344,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                         >
                           <Link
                             href={`/chat/${chat.id}`}
-                            className="block relative group bg-neutral-800/40 hover:bg-neutral-800/80 border border-neutral-700/50 hover:border-neutral-700 rounded-xl px-4 py-3.5 transition-all duration-200 hover:no-underline shadow-sm hover:shadow-md"
+                            className="block relative group bg-neutral-800/40 hover:bg-neutral-800/70 focus-visible:bg-neutral-800/80 border border-neutral-700/50 hover:border-neutral-700 focus-visible:border-neutral-600 rounded-lg px-4 py-3 transition-all duration-200 hover:no-underline shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 hover:scale-[1.015]"
                             onClick={() => setIsOpen(false)}
                           >
                             <div className="flex justify-between items-start">
@@ -352,14 +365,14 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                               </div>
                               <div
                                 className={cn(
-                                  "opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2",
+                                  "opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 ml-2",
                                   hoveredChatId === chat.id && "opacity-100"
                                 )}
                               >
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 rounded-full hover:bg-neutral-700 hover:text-red-400 transition-all duration-200 cursor-pointer"
+                                  className="h-8 w-8 rounded-full hover:bg-neutral-700 hover:text-red-400 transition-colors duration-200 cursor-pointer focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:ring-blue-500 focus-visible:ring-offset-neutral-900"
                                   title="Hapus Chat"
                                   onClick={(e) => handleDeleteChat(e, chat.id)}
                                   aria-label="Hapus chat ini"
@@ -393,13 +406,13 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 dibatalkan.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="sm:justify-center">
+            <DialogFooter className="sm:justify-center gap-3">
               <DialogClose asChild>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={cancelDelete}
-                  className="border-neutral-700 bg-transparent hover:bg-neutral-800 text-neutral-300"
+                  className="border-neutral-700 bg-transparent hover:bg-neutral-800 text-neutral-300 transition-colors duration-200"
                 >
                   Batal
                 </Button>
@@ -408,7 +421,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 variant="destructive"
                 size="sm"
                 onClick={confirmDelete}
-                className="bg-white hover:bg-neutral-200 text-black"
+                className="bg-red-600 hover:bg-red-700 text-white transition-colors duration-200"
               >
                 Hapus
               </Button>
@@ -430,13 +443,13 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 dibatalkan dan akan menghapus semua riwayat percakapan.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="sm:justify-center">
+            <DialogFooter className="sm:justify-center gap-3">
               <DialogClose asChild>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={cancelDeleteAllChats}
-                  className="border-neutral-700 bg-transparent hover:bg-neutral-800 text-neutral-300"
+                  className="border-neutral-700 bg-transparent hover:bg-neutral-800 text-neutral-300 transition-colors duration-200"
                 >
                   Batal
                 </Button>
@@ -445,7 +458,7 @@ export function RiwayatCredenza({ trigger }: RiwayatCredenzaProps) {
                 variant="destructive"
                 size="sm"
                 onClick={confirmDeleteAllChats}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white transition-colors duration-200"
               >
                 Hapus Semua
               </Button>
