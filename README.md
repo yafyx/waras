@@ -1,6 +1,7 @@
 # Waras AI
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/yafyx/waras)
 
 > **Waras AI** adalah asisten chat psikologi anonim berbahasa Indonesia, didukung Gemini AI dan basis pengetahuan artikel psikologi dari Alodokter. Dirancang untuk privasi, kecepatan, dan akurasi jawaban psikologi—tanpa akun, tanpa simpan chat di server.
 
