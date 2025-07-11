@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "query": "Apa tanda-tanda OCD?",
+    "ground_truth_documents": ["ocd"],
+    "reference_answer": "Tanda-tanda OCD meliputi pikiran obsesif yang menimbulkan kecemasan dan perilaku kompulsif yang dilakukan berulang kali untuk menghilangkan kecemasan tersebut. Contohnya adalah takut terkena penyakit sehingga mencuci tangan secara berlebihan atau terlalu sering membersihkan rumah. Penderita OCD biasanya menyadari bahwa pikiran dan tindakannya berlebihan, tetapi mereka tidak bisa melawannya."
+  },
+  {
+    "id": 2,
+    "query": "Cara mengatasi insomnia",
+    "ground_truth_documents": ["insomnia"],
+    "reference_answer": "Cara mengatasi insomnia meliputi menerapkan sleep hygiene dengan jadwal tidur teratur, menghindari kafein dan alkohol di malam hari, menciptakan lingkungan tidur yang nyaman, teknik relaksasi, serta terapi perilaku kognitif untuk insomnia (CBT-I). Jika perlu, dokter dapat meresepkan obat-obatan seperti benzodiazepine atau zolpidem."
+  },
+  {
+    "id": 3,
+    "query": "Gejala depresi pada orang dewasa",
+    "ground_truth_documents": ["depresi"],
+    "reference_answer": "Gejala depresi pada orang dewasa meliputi perasaan sedih mendalam dan kehilangan minat terhadap hal-hal yang disukai selama lebih dari 2 minggu. Gejala fisik meliputi mudah lelah, pusing, dan menurunnya selera makan. Gejala psikologis meliputi rasa cemas berlebihan, emosi tidak stabil, dan rasa putus asa."
+  },
+  {
+    "id": 4,
+    "query": "Perbedaan autisme dan ADHD",
+    "ground_truth_documents": ["autisme", "adhd"],
+    "reference_answer": "Autisme adalah gangguan perilaku dan interaksi sosial yang menyebabkan kesulitan berkomunikasi dan berhubungan sosial. ADHD adalah gangguan yang menyebabkan anak sulit memusatkan perhatian serta memiliki perilaku impulsif dan hiperaktif. Keduanya berbeda dalam fokus utama gangguan dan cara manifestasinya."
+  },
+  {
+    "id": 5,
+    "query": "Penanganan gangguan bipolar",
+    "ground_truth_documents": ["gangguan bipolar"],
+    "reference_answer": "Penanganan gangguan bipolar bertujuan mengurangi frekuensi gejala dan membantu penderita beraktivitas normal. Metode pengobatan meliputi obat-obatan seperti mood stabilizer, antidepresan, dan antipsikotik, serta psikoterapi seperti cognitive behavioral therapy (CBT) dan interpersonal and social rhythm therapy (IPSRT)."
+  },
+  {
+    "id": 6,
+    "query": "Apa itu skizofrenia paranoid?",
+    "ground_truth_documents": ["skizofrenia paranoid", "skizofrenia"],
+    "reference_answer": "Skizofrenia paranoid adalah jenis skizofrenia yang ditandai dengan delusi (waham) dan halusinasi, terutama halusinasi pendengaran. Penderita sering mengalami delusi kejar, merasa diawasi atau dikejar-kejar oleh orang lain. Gejala utama meliputi kecurigaan berlebihan, ketakutan, dan keyakinan pada sesuatu yang tidak nyata."
+  },
+  {
+    "id": 7,
+    "query": "Gejala PTSD setelah trauma",
+    "ground_truth_documents": ["ptsd"],
+    "reference_answer": "Gejala PTSD meliputi ingatan berulang pada peristiwa traumatis, kecenderungan mengelak dari hal-hal yang mengingatkan trauma, pemikiran dan perasaan negatif, serta perubahan perilaku dan emosi. Penderita sering mengalami mimpi buruk, mudah takut atau marah, dan sulit tidur."
+  },
+  {
+    "id": 8,
+    "query": "Penyebab dan pengobatan anoreksia nervosa",
+    "ground_truth_documents": ["anoreksia nervosa"],
+    "reference_answer": "Anoreksia nervosa disebabkan oleh kombinasi faktor seperti gangguan makan pada keluarga, perubahan hormon, trauma, dan lingkungan yang menganggap tubuh kurus ideal. Pengobatan meliputi psikoterapi (terapi perilaku kognitif, terapi keluarga), dan dalam kasus parah memerlukan rawat inap dengan pemasangan infus atau pemberian nutrisi."
+  },
+  {
+    "id": 9,
+    "query": "Cara mengatasi fobia sosial",
+    "ground_truth_documents": ["fobia"],
+    "reference_answer": "Mengatasi fobia sosial dapat dilakukan dengan psikoterapi seperti terapi perilaku kognitif (CBT) dan terapi desensitisasi. Obat-obatan seperti SSRI dan beta blockers dapat membantu meredakan gejala. Program bantuan mandiri meliputi perubahan gaya hidup, teknik relaksasi, dan visualisasi positif."
+  },
+  {
+    "id": 10,
+    "query": "Tanda-tanda gangguan kepribadian borderline",
+    "ground_truth_documents": ["gangguan kepribadian"],
+    "reference_answer": "Gangguan kepribadian borderline ditandai dengan perilaku impulsif dan berisiko, emosi yang tidak stabil dan rapuh, serta dorongan untuk menyakiti diri sendiri. Penderita juga cenderung rentan mengalami identity crisis dan kesulitan dalam hubungan interpersonal."
+  },
+  {
+    "id": 11,
+    "query": "Bagaimana cara menangani mimpi buruk pada anak?",
+    "ground_truth_documents": ["mimpi buruk"],
+    "reference_answer": "Menangani mimpi buruk pada anak meliputi menciptakan rutinitas tidur yang nyaman, menghindari konten menakutkan sebelum tidur, menggunakan teknik relaksasi, dan memberikan rasa aman. Jika sering terjadi dan mengganggu, konsultasi dengan dokter diperlukan untuk psikoterapi atau image rehearsal therapy."
+  },
+  {
+    "id": 12,
+    "query": "Perbedaan bulimia dan anoreksia",
+    "ground_truth_documents": ["bulimia", "anoreksia nervosa"],
+    "reference_answer": "Anoreksia nervosa ditandai dengan pembatasan makanan ekstrem untuk menurunkan berat badan, sedangkan bulimia ditandai dengan memuntahkan makanan secara paksa setelah makan berlebihan. Keduanya adalah gangguan makan yang berbahaya dan memerlukan penanganan profesional."
+  },
+  {
+    "id": 13,
+    "query": "Gejala ODD pada anak",
+    "ground_truth_documents": ["odd (oppositional defiant disorder)"],
+    "reference_answer": "Gejala ODD (Oppositional Defiant Disorder) pada anak meliputi mudah kehilangan kesabaran, mudah marah dan tersinggung, sering mengganggu orang lain, sering berdebat dengan orang dewasa, menolak mematuhi peraturan, dan sering menyalahkan orang lain. Gejala harus berlangsung minimal 6 bulan."
+  },
+  {
+    "id": 14,
+    "query": "Apa itu kleptomania dan bagaimana mengatasinya?",
+    "ground_truth_documents": ["kleptomania"],
+    "reference_answer": "Kleptomania adalah gangguan kendali impulsif yang membuat penderita sulit menahan diri dari keinginan mencuri. Berbeda dengan pencurian kriminal, penderita mencuri secara spontan tanpa motif keuntungan. Pengobatan meliputi psikoterapi dan obat-obatan untuk mengatur senyawa kimia otak."
+  },
+  {
+    "id": 15,
+    "query": "Tanda-tanda gangguan mental secara umum",
+    "ground_truth_documents": ["gangguan mental"],
+    "reference_answer": "Tanda-tanda gangguan mental meliputi waham atau delusi, halusinasi, perubahan suasana hati yang ekstrem, perasaan sedih berkepanjangan, kecemasan berlebihan, gangguan makan, perubahan pola tidur, perilaku tidak wajar, dan gejala fisik seperti sakit kepala atau sakit maag tanpa penyebab medis yang jelas."
+  }
+]

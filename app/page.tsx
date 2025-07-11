@@ -1,18 +1,14 @@
 "use client";
 
-import Image from "next/image";
-import { Message } from "ai";
-import { useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
-import { motion } from "framer-motion";
-import { ArrowUp } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { InfoBoxes } from "@/components/info-boxes";
-import { v4 as uuidv4 } from "uuid";
-import { Spotlight } from "@/components/ui/spotlight";
 import { HomeInputArea } from "@/components/ui/home-input-area"; // Updated import
-import { useRef, useCallback } from "react";
+import { Spotlight } from "@/components/ui/spotlight";
+import { Message } from "ai";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -26,7 +22,7 @@ export default function Home() {
   const onFormSubmit = (
     e:
       | React.FormEvent<HTMLFormElement>
-      | React.KeyboardEvent<HTMLTextAreaElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
     e.preventDefault();
     if (input.trim().length >= 3 && !awaitingResponse) {
@@ -49,7 +45,7 @@ export default function Home() {
         JSON.stringify({
           id: chatId,
           messages: [userMessage],
-        })
+        }),
       );
 
       // Trigger refresh of the chat list
@@ -78,7 +74,7 @@ interface InitialLayoutProps {
   onFormSubmit: (
     e:
       | React.FormEvent<HTMLFormElement>
-      | React.KeyboardEvent<HTMLTextAreaElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>,
   ) => void;
   awaitingResponse: boolean;
 }
@@ -174,7 +170,7 @@ interface InputAreaProps {
   onFormSubmit: (
     e:
       | React.FormEvent<HTMLFormElement>
-      | React.KeyboardEvent<HTMLTextAreaElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>,
   ) => void;
   awaitingResponse: boolean;
 }

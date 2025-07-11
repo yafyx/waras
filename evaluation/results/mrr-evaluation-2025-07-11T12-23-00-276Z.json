@@ -1,0 +1,875 @@
+{
+  "mrr": 1,
+  "details": [
+    {
+      "queryId": 1,
+      "query": "Apa tanda-tanda OCD?",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "ocd",
+          "similarity": 0.7229505755529463,
+          "isRelevant": true
+        },
+        {
+          "title": "ocd",
+          "similarity": 0.6974053149243321,
+          "isRelevant": true
+        },
+        {
+          "title": "ocd",
+          "similarity": 0.6757687721408401,
+          "isRelevant": true
+        },
+        {
+          "title": "ocd",
+          "similarity": 0.6730646558977077,
+          "isRelevant": true
+        },
+        {
+          "title": "ocd",
+          "similarity": 0.6528117091477464,
+          "isRelevant": true
+        },
+        {
+          "title": "obsessive love disorder",
+          "similarity": 0.6498882406599736,
+          "isRelevant": true
+        },
+        {
+          "title": "obsessive love disorder",
+          "similarity": 0.6206675229318099,
+          "isRelevant": false
+        },
+        {
+          "title": "obsessive love disorder",
+          "similarity": 0.616032047112436,
+          "isRelevant": false
+        },
+        {
+          "title": "gangguan kecemasan umum",
+          "similarity": 0.6128311042033695,
+          "isRelevant": true
+        },
+        {
+          "title": "hoarding disorder",
+          "similarity": 0.607217728987272,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 2,
+      "query": "Cara mengatasi insomnia",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "insomnia",
+          "similarity": 0.7934349493461375,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.7823517326481402,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.7801976343945625,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.7704966882828975,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.7635861901801687,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.7528178829766199,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.7480671301360123,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.7451516186795211,
+          "isRelevant": true
+        },
+        {
+          "title": "insomnia",
+          "similarity": 0.744283661973444,
+          "isRelevant": true
+        },
+        {
+          "title": "hipersomnia",
+          "similarity": 0.7340256478802696,
+          "isRelevant": false
+        }
+      ]
+    },
+    {
+      "queryId": 3,
+      "query": "Gejala depresi pada orang dewasa",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "depresi",
+          "similarity": 0.8029844866689656,
+          "isRelevant": true
+        },
+        {
+          "title": "depresi",
+          "similarity": 0.7539398409133572,
+          "isRelevant": true
+        },
+        {
+          "title": "depresi",
+          "similarity": 0.7422618006885359,
+          "isRelevant": true
+        },
+        {
+          "title": "depresi",
+          "similarity": 0.6817445216501413,
+          "isRelevant": true
+        },
+        {
+          "title": "post power syndrome",
+          "similarity": 0.6780785820170708,
+          "isRelevant": false
+        },
+        {
+          "title": "post power syndrome",
+          "similarity": 0.673084188519198,
+          "isRelevant": true
+        },
+        {
+          "title": "postpartum depression",
+          "similarity": 0.669561765235675,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.6547477804256785,
+          "isRelevant": true
+        },
+        {
+          "title": "stres",
+          "similarity": 0.6512580549037648,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan kecemasan umum",
+          "similarity": 0.6489777981108346,
+          "isRelevant": false
+        }
+      ]
+    },
+    {
+      "queryId": 4,
+      "query": "Perbedaan autisme dan ADHD",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "autisme",
+          "similarity": 0.726297666271863,
+          "isRelevant": true
+        },
+        {
+          "title": "adhd",
+          "similarity": 0.7148301891925373,
+          "isRelevant": true
+        },
+        {
+          "title": "autisme",
+          "similarity": 0.7063774081914904,
+          "isRelevant": true
+        },
+        {
+          "title": "adhd",
+          "similarity": 0.7044126876914645,
+          "isRelevant": true
+        },
+        {
+          "title": "autisme",
+          "similarity": 0.6788698948151439,
+          "isRelevant": true
+        },
+        {
+          "title": "adhd",
+          "similarity": 0.6708168031048242,
+          "isRelevant": true
+        },
+        {
+          "title": "autisme",
+          "similarity": 0.663348886469614,
+          "isRelevant": true
+        },
+        {
+          "title": "autisme",
+          "similarity": 0.6582164341041625,
+          "isRelevant": true
+        },
+        {
+          "title": "tantrum",
+          "similarity": 0.6424411678949259,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.616605065726353,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 5,
+      "query": "Penanganan gangguan bipolar",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "gangguan bipolar",
+          "similarity": 0.8384360919145952,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7901524484537066,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan bipolar",
+          "similarity": 0.7576636301751148,
+          "isRelevant": true
+        },
+        {
+          "title": "psikosis",
+          "similarity": 0.7452033299278649,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7450729276823037,
+          "isRelevant": true
+        },
+        {
+          "title": "nymphomania",
+          "similarity": 0.7172544205199175,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan bipolar",
+          "similarity": 0.708268841920104,
+          "isRelevant": true
+        },
+        {
+          "title": "hipomania",
+          "similarity": 0.7053799724041467,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan kepribadian",
+          "similarity": 0.6982311583844679,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan kepribadian",
+          "similarity": 0.6949010100897062,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 6,
+      "query": "Apa itu skizofrenia paranoid?",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.8795904605364656,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.8340635477073366,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.8250448358885444,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.8142416989620095,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia",
+          "similarity": 0.8029628961152122,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.799679438356456,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.7966595467154244,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.7893375171503781,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.7857573021645247,
+          "isRelevant": true
+        },
+        {
+          "title": "skizofrenia paranoid",
+          "similarity": 0.775362861744542,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 7,
+      "query": "Gejala PTSD setelah trauma",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "ptsd",
+          "similarity": 0.8231037806257447,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.8193824251852251,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.8139852333876736,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.7960247896004607,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.7795803157899375,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.7771695733786894,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.7702797728097662,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.7536195051749475,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.7493800118621946,
+          "isRelevant": true
+        },
+        {
+          "title": "ptsd",
+          "similarity": 0.7486075416496414,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 8,
+      "query": "Penyebab dan pengobatan anoreksia nervosa",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.8290162483478167,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.8217307426945888,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.8203816002611205,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.8143459503931344,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.7991854042263012,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.7844173969793701,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.7819977409678405,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.7752423650737874,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.7629917370220425,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan makan",
+          "similarity": 0.7598159424643042,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 9,
+      "query": "Cara mengatasi fobia sosial",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "fobia sosial",
+          "similarity": 0.8545935966621231,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia sosial",
+          "similarity": 0.8107743771440542,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia",
+          "similarity": 0.7999269345421843,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia sosial",
+          "similarity": 0.7967467416011319,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia sosial",
+          "similarity": 0.7927605701663749,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia sosial",
+          "similarity": 0.79165446883344,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia sosial",
+          "similarity": 0.7899962221879729,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia sosial",
+          "similarity": 0.7799097325821979,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia",
+          "similarity": 0.7785506675265995,
+          "isRelevant": true
+        },
+        {
+          "title": "fobia sosial",
+          "similarity": 0.7681285855706519,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 10,
+      "query": "Tanda-tanda gangguan kepribadian borderline",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "gangguan kepribadian",
+          "similarity": 0.7243635975298064,
+          "isRelevant": true
+        },
+        {
+          "title": "bpd (borderline personality disorder)",
+          "similarity": 0.7126872306597897,
+          "isRelevant": true
+        },
+        {
+          "title": "bpd (borderline personality disorder)",
+          "similarity": 0.6983093416409037,
+          "isRelevant": true
+        },
+        {
+          "title": "bpd (borderline personality disorder)",
+          "similarity": 0.6724122558316066,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan kepribadian",
+          "similarity": 0.6617575664930496,
+          "isRelevant": true
+        },
+        {
+          "title": "bpd (borderline personality disorder)",
+          "similarity": 0.6513442451525103,
+          "isRelevant": false
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.6478195728294076,
+          "isRelevant": false
+        },
+        {
+          "title": "gangguan kepribadian",
+          "similarity": 0.637955760025399,
+          "isRelevant": true
+        },
+        {
+          "title": "bpd (borderline personality disorder)",
+          "similarity": 0.6359416934588954,
+          "isRelevant": false
+        },
+        {
+          "title": "gangguan kepribadian",
+          "similarity": 0.6327158636515877,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 11,
+      "query": "Bagaimana cara menangani mimpi buruk pada anak?",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "mimpi buruk",
+          "similarity": 0.7410044886585818,
+          "isRelevant": true
+        },
+        {
+          "title": "mimpi buruk",
+          "similarity": 0.7364802064469715,
+          "isRelevant": true
+        },
+        {
+          "title": "mimpi buruk",
+          "similarity": 0.7138143542806015,
+          "isRelevant": true
+        },
+        {
+          "title": "mimpi buruk",
+          "similarity": 0.6928031656400125,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.6827139193771042,
+          "isRelevant": false
+        },
+        {
+          "title": "tantrum",
+          "similarity": 0.6788459666754385,
+          "isRelevant": false
+        },
+        {
+          "title": "mimpi buruk",
+          "similarity": 0.6731632496733798,
+          "isRelevant": true
+        },
+        {
+          "title": "coulrophobia",
+          "similarity": 0.6673455860660124,
+          "isRelevant": false
+        },
+        {
+          "title": "mimpi buruk",
+          "similarity": 0.6629670559552739,
+          "isRelevant": true
+        },
+        {
+          "title": "mimpi buruk",
+          "similarity": 0.662658686433424,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 12,
+      "query": "Perbedaan bulimia dan anoreksia",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "bulimia",
+          "similarity": 0.7954842984896737,
+          "isRelevant": true
+        },
+        {
+          "title": "bulimia",
+          "similarity": 0.7912106732892443,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan makan",
+          "similarity": 0.7517977199914335,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.7487401272231418,
+          "isRelevant": true
+        },
+        {
+          "title": "bulimia",
+          "similarity": 0.7421326652118905,
+          "isRelevant": true
+        },
+        {
+          "title": "binge eating disorder",
+          "similarity": 0.7326154131300817,
+          "isRelevant": true
+        },
+        {
+          "title": "anoreksia nervosa",
+          "similarity": 0.7278107684750428,
+          "isRelevant": true
+        },
+        {
+          "title": "bulimia",
+          "similarity": 0.7214845242023754,
+          "isRelevant": true
+        },
+        {
+          "title": "bulimia",
+          "similarity": 0.7191664156067819,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan makan",
+          "similarity": 0.7181531117341815,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 13,
+      "query": "Gejala ODD pada anak",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.8419269348223958,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.791458223103632,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.7868010422394978,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.784957217920957,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.7776563017650373,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.7723858490800728,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.767105030439163,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.7481312449589661,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.7126140624262974,
+          "isRelevant": true
+        },
+        {
+          "title": "odd (oppositional defiant disorder)",
+          "similarity": 0.7105978320856593,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 14,
+      "query": "Apa itu kleptomania dan bagaimana mengatasinya?",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "kleptomania",
+          "similarity": 0.873704030697983,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.8680417587281178,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.8621518085090537,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.858809942618541,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.8558534754267064,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.8497788883371707,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.8359762716882418,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.8342912211167791,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.814302556684298,
+          "isRelevant": true
+        },
+        {
+          "title": "kleptomania",
+          "similarity": 0.809866233868793,
+          "isRelevant": true
+        }
+      ]
+    },
+    {
+      "queryId": 15,
+      "query": "Tanda-tanda gangguan mental secara umum",
+      "rank": 1,
+      "reciprocalRank": 1,
+      "retrievedDocs": [
+        {
+          "title": "gangguan mental",
+          "similarity": 0.8164207562270065,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7818151763206262,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7441187521749763,
+          "isRelevant": true
+        },
+        {
+          "title": "psikosis",
+          "similarity": 0.7420299652647506,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7357909876518974,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7324269792182887,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7292806880096133,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan kecemasan umum",
+          "similarity": 0.7281818960906208,
+          "isRelevant": false
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7262787531474201,
+          "isRelevant": true
+        },
+        {
+          "title": "gangguan mental",
+          "similarity": 0.7198158087129688,
+          "isRelevant": true
+        }
+      ]
+    }
+  ]
+}

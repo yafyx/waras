@@ -16,7 +16,10 @@
     "db:check": "drizzle-kit check",
     "db:fix": "tsx scripts/fix-db-schema.ts",
     "db:reset": "tsx scripts/reset-db-schema.ts",
-    "import-alodokter": "tsx scripts/import-alodokter-data.ts"
+    "import-alodokter": "tsx scripts/import-alodokter-data.ts",
+    "eval:retrieval": "tsx evaluation/retrieval-evaluation.ts",
+    "eval:generation": "tsx evaluation/generation-evaluation.ts",
+    "eval:complete": "tsx evaluation/run-evaluation.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.13",
