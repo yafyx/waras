@@ -36,32 +36,45 @@ Lihat demo di [waras.vercel.app](https://waras.vercel.app)
 ## Instalasi & Penggunaan
 
 1. **Clone repository:**
+
    ```bash
    git clone https://github.com/your-username/waras.git
    cd waras
    ```
+
 2. **Install dependencies:**
+
    ```bash
-   pnpm install
-   ```
+    pnpm install
+    ```
+
 3. **Konfigurasi environment:**
+
    - Salin `.env.example` ke `.env` dan isi:
+
      ```env
      DATABASE_URL=postgres://postgres:postgres@localhost:5432/{DB_NAME}
      GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key
      ```
+
 4. **Migrasi database:**
+
    ```bash
    pnpm run db:migrate
    ```
+
 5. **Import data Alodokter:**
+
    ```bash
    pnpm run import-alodokter
    ```
+
 6. **Jalankan server development:**
+
    ```bash
-   pnpm run dev
-   ```
+    pnpm run dev
+    ```
+
 7. **Akses di browser:**
    [http://localhost:3000](http://localhost:3000)
 
@@ -70,6 +83,10 @@ Lihat demo di [waras.vercel.app](https://waras.vercel.app)
 - Data artikel psikologi Alodokter di-embed dan disimpan di PostgreSQL (vector DB).
 - Setiap pertanyaan user diproses dengan RAG: AI hanya menjawab berdasarkan hasil pencarian artikel relevan.
 - Tidak ada data chat user yang dikirim ke server atau disimpan di database.
+
+## Sumber Data
+
+- Data scraping artikel psikologi Alodokter berasal dari repositori open source: [yafyx/alodokter-psikologi-scraping](https://github.com/yafyx/alodokter-psikologi-scraping).
 
 ## Lisensi
 
